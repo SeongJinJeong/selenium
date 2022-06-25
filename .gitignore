@@ -3,4 +3,4 @@ webdriver
 *.js
 *.js.map
 .idea
-defines.ts
+defines
