@@ -1,22 +1,21 @@
 import { By, Key, WebDriver, WebElement } from "selenium-webdriver";
 import Util from './util'
 import DEFINES from './defines/defines';
+import App from ".";
 
 class Login {
     public driver : WebDriver;
     
-    constructor(driver){
-        this.driver = driver;
+    constructor(){}
+
+    run():Promise<void>{
+        console.log("Login Start!");
+        return this.doLoginProcess();
     }
 
-    run():void{
-        console.log("Login Class executed");
-        this.doLoginProcess();
-    }
-
-    doLoginProcess() : void {
+    doLoginProcess() : Promise<void> | undefined {
         try {
-            this.getLoginPage()
+            return this.getLoginPage()
                 .then(()=>{
                     return this.selectLoginBox();
                 })
@@ -36,14 +35,14 @@ class Login {
     }
 
     getLoginPage() : Promise<void> {
-        return this.driver.findElement(By.className('link_login'))
+        return App.driver.findElement(By.className('link_login'))
         .then((webElement)=>{
             return webElement.click();
         })
     }
 
     selectLoginBox() : Promise<void> {
-        return this.driver.findElement(By.className('menu_id'))
+        return App.driver.findElement(By.className('menu_id'))
         .then((elem)=>{
             return elem.click();
         })
@@ -52,11 +51,11 @@ class Login {
     enterID() : Promise<void> {
         let idTextField : WebElement = null;
 
-        idTextField = this.driver.findElement(By.id('id'));
+        idTextField = App.driver.findElement(By.id('id'));
         idTextField.sendKeys(Key.F12);
         return idTextField.click()
         .then(()=>{
-            return Util.getInstance().makeCopy(DEFINES.LOGIN_ID)
+            return Util.getInstance().makeCopy(DEFINES.LOGIN.LOGIN_ID)
             .then(()=>{
                 idTextField.sendKeys(Key.CONTROL,'v');
             })
@@ -66,10 +65,10 @@ class Login {
     enterPW() : Promise<void> {
         let pwTextField : WebElement = null;
         
-        pwTextField = this.driver.findElement(By.id('pw'));
+        pwTextField = App.driver.findElement(By.id('pw'));
         return pwTextField.click()
         .then(()=>{
-            Util.getInstance().makeCopy(DEFINES.LOGIN_PW);
+            Util.getInstance().makeCopy(DEFINES.LOGIN.LOGIN_PW);
             return pwTextField.sendKeys(Key.CONTROL,'v');
         })
     }
@@ -77,7 +76,7 @@ class Login {
     clickLogin() : Promise<void> {
         let loginBtn : WebElement = null;
 
-        loginBtn = this.driver.findElement(By.id('log.login'));
+        loginBtn = App.driver.findElement(By.id('log.login'));
         return loginBtn.click();
     }
 }

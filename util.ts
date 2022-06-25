@@ -41,6 +41,16 @@ class Util {
             })
         })
     }
+
+    putDelay(ms:number,callback:()=>void,target:any):Promise<void>{
+        return new Promise((resolve,reject)=>{
+            setTimeout(function(){
+                callback && callback.call(target);
+                resolve();
+            },ms);
+        })
+        
+    }
 }
 
 export default Util;

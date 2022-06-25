@@ -2,6 +2,7 @@ import {Builder, Options, WebDriver} from "selenium-webdriver";
 import * as Chrome from "selenium-webdriver/chrome";
 
 import Login from "./Login";
+import Blog from "./blog";
 import Util from "./util"
 
 class App {
@@ -10,6 +11,7 @@ class App {
   private options : Chrome.Options;
 
   private login : Login;
+  private blog : Blog;
   private util : Util;
 
   constructor(){
@@ -20,7 +22,10 @@ class App {
     .build();
 
     // Login
-    this.login = new Login(App.driver);
+    this.login = new Login();
+
+    // Blog
+    this.blog = new Blog();
 
     // Util
     this.util = new Util();
@@ -28,8 +33,17 @@ class App {
 
   run() : void{
     try{
-      App.driver.get('https://naver.com').then(()=>{
-        this.login.run();
+      App.driver.get('https://naver.com')
+      .then(()=>{
+        return this.login.run();
+      })
+      .then(()=>{
+        return Util.getInstance().putDelay(5000,function(){
+          this.blog.run();
+        },this);
+      })
+      .then(()=>{
+        console.log("FINISH!");
       })
     } catch (err){
       console.error(err);
