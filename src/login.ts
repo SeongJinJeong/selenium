@@ -1,6 +1,6 @@
 import { By, Key, WebDriver, WebElement } from "selenium-webdriver";
 import Util from './util'
-import DEFINES from './defines/defines';
+import DEFINES from '../defines/defines';
 import App from ".";
 
 class Login {

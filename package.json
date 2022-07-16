@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "compile": "npx tsc",
+    "start": "cd ./dist/src && node index.js",
+    "compile": "rmdir /s dist && npx tsc",
     "execute": "concurrently \"npm run compile\" \"npm run start\""
   },
   "author": "",

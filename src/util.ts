@@ -42,11 +42,12 @@ class Util {
         })
     }
 
-    putDelay(ms:number,callback:()=>void,target:any):Promise<void>{
+    putDelay(ms:number,callback:()=>Promise<void>,target:any):Promise<void>{
         return new Promise((resolve,reject)=>{
             setTimeout(function(){
-                callback && callback.call(target);
-                resolve();
+                callback && callback.call(target).then(()=>{
+                    resolve();
+                })
             },ms);
         })
         
