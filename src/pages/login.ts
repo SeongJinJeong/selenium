@@ -1,7 +1,7 @@
 import { By, Key, WebDriver, WebElement } from "selenium-webdriver";
-import Util from './util'
-import DEFINES from './defines/defines';
-import App from ".";
+import Util from '../util'
+import DEFINES from '../../defines/defines';
+import App from "../../index";
 
 class Login {
     public driver : WebDriver;
@@ -13,7 +13,7 @@ class Login {
         return this.doLoginProcess();
     }
 
-    doLoginProcess() : Promise<void> | undefined {
+    doLoginProcess() : Promise<void>{
         try {
             return this.getLoginPage()
                 .then(()=>{
@@ -31,6 +31,7 @@ class Login {
         }
         catch(err){
             console.log(err);
+            return Promise.resolve();
         }
     }
 
@@ -49,7 +50,7 @@ class Login {
     }
 
     enterID() : Promise<void> {
-        let idTextField : WebElement = null;
+        let idTextField : WebElement = null!;
 
         idTextField = App.driver.findElement(By.id('id'));
         idTextField.sendKeys(Key.F12);
@@ -63,7 +64,7 @@ class Login {
     }
 
     enterPW() : Promise<void> {
-        let pwTextField : WebElement = null;
+        let pwTextField : WebElement = null!;
         
         pwTextField = App.driver.findElement(By.id('pw'));
         return pwTextField.click()
@@ -74,7 +75,7 @@ class Login {
     }
 
     clickLogin() : Promise<void> {
-        let loginBtn : WebElement = null;
+        let loginBtn : WebElement = null!;
 
         loginBtn = App.driver.findElement(By.id('log.login'));
         return loginBtn.click();

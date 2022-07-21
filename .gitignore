@@ -4,3 +4,4 @@ webdriver
 *.js.map
 .idea
 defines
+.vscode/tasks.json

@@ -1,5 +1,5 @@
 import { Actions, By, Key, WebDriver, WebElement } from "selenium-webdriver";
-import App from './index';
+import App from '../index';
 import * as clipboard from 'copy-paste';
 
 class Util {
@@ -29,7 +29,7 @@ class Util {
     getNewTab(elem : WebElement, text) : Promise<void> {
         return elem.sendKeys(Key.CONTROL,'t')
         .then(()=>{
-            let textbox : WebElement = null;
+            let textbox : WebElement = null!;
             textbox = App.driver.findElement(By.id('input'));
 
             return textbox.click()
@@ -42,7 +42,7 @@ class Util {
         })
     }
 
-    putDelay(ms:number,callback:()=>void,target:any):Promise<void>{
+    putDelay(ms:number,callback:Function | null,target:any):Promise<void>{
         return new Promise((resolve,reject)=>{
             setTimeout(function(){
                 callback && callback.call(target);

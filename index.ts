@@ -1,9 +1,9 @@
 import {Builder, Options, WebDriver} from "selenium-webdriver";
 import * as Chrome from "selenium-webdriver/chrome";
 
-import Login from "./Login";
-import Blog from "./blog";
-import Util from "./util"
+import Login from "./src/pages/Login";
+import Blog from "./src/pages/blog";
+import Util from "./src/util"
 
 class App {
 
