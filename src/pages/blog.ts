@@ -15,10 +15,7 @@ class Blog {
         console.log("Blog Started!");
         return this.getWritePage()
         .then(()=>{
-            return Util.getInstance().putDelay(5000,null,this);
-        })
-        .then(()=>{
-            return this.switchToIFrame();
+            return Util.getInstance().putDelay(5000,this.switchToIFrame,this);
         })
         .then(()=>{
             return Util.getInstance().putDelay(2000,this.clickHelpCloseButton,this);
@@ -30,7 +27,7 @@ class Blog {
             return this.getDataTest();
         })
         .then(()=>{
-            return this._dataManager.getBestProduct(1016)
+            // return this._dataManager.getBestProduct(1016);
         })
     }
 
@@ -67,9 +64,7 @@ class Blog {
     }
 
     getDataTest() : void {
-        this._dataManager.testCoupangRequest().then(()=>{
-            console.log(" 끝 ! ");
-        })
+        this._dataManager.getBestProduct(1016);
     }
 }
 

@@ -1,12 +1,13 @@
 import axios, { Axios, AxiosError, AxiosResponse, Method } from "axios";
 import DEFINES from "../../defines/defines";
 import KeyGenerator from "./hmacGenerator"
+import DataManager from "./DataManager"
 
 class Data {
     private _keyGen : KeyGenerator = null!;
 
     private REQUEST_METHOD : string = "GET";
-    private DOMAIN : string = "https://api-gateway.coupang.com"
+    private DOMAIN : string = "https://api-gateway.coupang.com/v2/providers/affiliate_open_api/apis/openapi/v1"
     private URL : string = "/v2/providers/affiliate_open_api/apis/openapi/"
     private ACCESS_KEY : string = DEFINES.KEYS.ACCESS_KEY;
     private SECRET_KEY : string = DEFINES.KEYS.SECRET_KEY;
@@ -16,28 +17,19 @@ class Data {
     ]};
 
     constructor(){
-        this._keyGen = new KeyGenerator(this.REQUEST_METHOD,this.URL,this.SECRET_KEY,this.ACCESS_KEY);
+
     }
 
-    async testCoupangRequest() : Promise<AxiosResponse | AxiosError> {
-        let authorization : string = null!;
-        return this._keyGen._generateKey().then((key)=>{
-            return Promise.resolve(key);
-        })
-        .then((key)=>{
-            return this._sendRequest(key,null,null,'POST');
-        })
-    }
-
-    async _sendRequest(key : string, url? : string | null, data? : any | null , method? : Method | null) : Promise<AxiosResponse | AxiosError> {
-        axios.defaults.baseURL = this.DOMAIN;
+    async _sendRequest(url : string | null, method : Method | null, data? : any | null) : Promise<AxiosResponse | AxiosError> {
+        var exactURL = this.DOMAIN + url;
+        let someKey = await DataManager.getInstance().getKey(method,url);
 
         try {       
             const response = await axios.request({
                 method: !!method ? method :this.REQUEST_METHOD,
-                url: !!url ? url :this.URL,
-                headers: { Authorization: key },
-                data: !!data ? data : this.REQUEST
+                url: !!url ? exactURL :this.URL,
+                headers: { Authorization: someKey }
+                // data: !!data ? data : null
             });
             console.log(response.data);
 
@@ -49,18 +41,16 @@ class Data {
     }
 
     async getBestProduct(category : number) : Promise<any>{
-        const url = `https://api-gateway.coupang.com/v2/providers/affiliate_open_api/apis/openapi/products/bestcategories/${category}?limit=50`;
+        const url = `/products/bestcategories/${category}`;
+        const method = "GET";
 
-        return this.getProductData(url);
+        return this.getProductData(url,method);
     }
 
-    async getProductData(url : string){
-        const key = "";
-        return this._keyGen._generateKey().then((key)=>{
-            return Promise.resolve(key);
-        })
-        .then((key)=>{
-            return this._sendRequest(key,url,null,'GET');
+    async getProductData(url : string, method : Method){
+        this._sendRequest(url,method,null)
+        .then(()=>{
+            console.log("FETCHING DATA END");
         })
     }
 }
