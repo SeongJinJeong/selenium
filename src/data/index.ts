@@ -1,4 +1,4 @@
-import axios, { AxiosResponse, Method } from "axios";
+import axios, { Axios, AxiosError, AxiosResponse, Method } from "axios";
 import DEFINES from "../../defines/defines";
 import KeyGenerator from "./hmacGenerator"
 
@@ -19,7 +19,7 @@ class Data {
         this._keyGen = new KeyGenerator(this.REQUEST_METHOD,this.URL,this.SECRET_KEY,this.ACCESS_KEY);
     }
 
-    async testCoupangRequest() : Promise<AxiosResponse> {
+    async testCoupangRequest() : Promise<AxiosResponse | AxiosError> {
         let authorization : string = null!;
         return this._keyGen._generateKey().then((key)=>{
             return Promise.resolve(key);
@@ -29,7 +29,7 @@ class Data {
         })
     }
 
-    async _sendRequest(key : string, url? : string, data? : any, method? : Method) : Promise<AxiosResponse> {
+    async _sendRequest(key : string, url? : string | null, data? : any | null , method? : Method | null) : Promise<AxiosResponse | AxiosError> {
         axios.defaults.baseURL = this.DOMAIN;
 
         try {       
@@ -44,6 +44,7 @@ class Data {
             return response;
         } catch (err) {
             console.log(JSON.stringify(err.response.data));
+            return new AxiosError(err);
         }    
     }
 

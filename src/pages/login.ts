@@ -1,13 +1,7 @@
 import { By, Key, WebDriver, WebElement } from "selenium-webdriver";
-<<<<<<< HEAD:src/pages/login.ts
 import Util from '../util'
 import DEFINES from '../../defines/defines';
 import App from "../../index";
-=======
-import Util from './util'
-import DEFINES from '../defines/defines';
-import App from ".";
->>>>>>> 0a02710242af251acdc9d7a1772a01ab4d2f94c9:src/login.ts
 
 class Login {
     public driver : WebDriver;

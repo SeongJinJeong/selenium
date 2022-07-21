@@ -1,5 +1,5 @@
 import { Actions, By, Key, WebDriver, WebElement } from "selenium-webdriver";
-import App from '../index';
+import App from './../index';
 import * as clipboard from 'copy-paste';
 
 class Util {
@@ -42,11 +42,7 @@ class Util {
         })
     }
 
-<<<<<<< HEAD:src/util.ts
     putDelay(ms:number,callback:Function | null,target:any):Promise<void>{
-=======
-    putDelay(ms:number,callback:()=>Promise<void>,target:any):Promise<void>{
->>>>>>> 0a02710242af251acdc9d7a1772a01ab4d2f94c9:util.ts
         return new Promise((resolve,reject)=>{
             setTimeout(function(){
                 callback && callback.call(target).then(()=>{
