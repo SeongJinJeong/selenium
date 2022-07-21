@@ -42,11 +42,16 @@ class Util {
         })
     }
 
+<<<<<<< HEAD:src/util.ts
     putDelay(ms:number,callback:Function | null,target:any):Promise<void>{
+=======
+    putDelay(ms:number,callback:()=>Promise<void>,target:any):Promise<void>{
+>>>>>>> 0a02710242af251acdc9d7a1772a01ab4d2f94c9:util.ts
         return new Promise((resolve,reject)=>{
             setTimeout(function(){
-                callback && callback.call(target);
-                resolve();
+                callback && callback.call(target).then(()=>{
+                    resolve();
+                })
             },ms);
         })
         

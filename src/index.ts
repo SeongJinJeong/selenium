@@ -39,7 +39,7 @@ class App {
       })
       .then(()=>{
         return Util.getInstance().putDelay(5000,function(){
-          this.blog.run();
+          return this.blog.run();
         },this);
       })
       .then(()=>{
