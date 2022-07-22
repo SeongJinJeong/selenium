@@ -64,7 +64,13 @@ class Blog {
     }
 
     getDataTest() : void {
-        this._dataManager.getBestProduct(1016);
+        this._dataManager.getSearchData(DEFINES.PRODUCT_URL_GET.SEARCH.URL,"GET","65인치%20티비",10)
+        .then((data)=>{
+            console.log(`getDataTest Function Call : ${JSON.stringify(data)}`);
+        })
+        .catch((err)=>{
+            console.log(`Rejected By ${JSON.stringify(err)}`);
+        })
     }
 }
 

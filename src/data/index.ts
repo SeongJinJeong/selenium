@@ -4,40 +4,71 @@ import KeyGenerator from "./hmacGenerator"
 import DataManager from "./DataManager"
 
 class Data {
-    private _keyGen : KeyGenerator = null!;
-
-    private REQUEST_METHOD : string = "GET";
-    private DOMAIN : string = "https://api-gateway.coupang.com/v2/providers/affiliate_open_api/apis/openapi/v1"
-    private URL : string = "/v2/providers/affiliate_open_api/apis/openapi/"
-    private ACCESS_KEY : string = DEFINES.KEYS.ACCESS_KEY;
-    private SECRET_KEY : string = DEFINES.KEYS.SECRET_KEY;
-    private REQUEST : {} = { "coupangUrls": [
-        "https://www.coupang.com/np/search?component=&q=good&channel=user", 
-        "https://www.coupang.com/np/coupangglobal"
-    ]};
+    private _insertUrl : string = "/v2/providers/affiliate_open_api/apis/openapi/v1";
 
     constructor(){
 
     }
 
     async _sendRequest(url : string | null, method : Method | null, data? : any | null) : Promise<AxiosResponse | AxiosError> {
-        var exactURL = this.DOMAIN + url;
-        let someKey = await DataManager.getInstance().getKey(method,url);
+        axios.defaults.baseURL = "https://api-gateway.coupang.com";
+        const exactUrl = this._insertUrl + url;
+        let someKey = await DataManager.getInstance().getKey(method,exactUrl);
+        console.log(someKey);
+
+        if(method.toLowerCase() === "post"){
+            try {       
+                if(!data)
+                    throw new Error("Param Data is not exist!");
+
+                const response = await axios.request({
+                    method: method,
+                    url: exactUrl,
+                    headers: { Authorization: someKey },
+                    data : data
+                });
+                console.log(response.data);
+    
+                return response;
+            } catch (err) {
+                console.log(JSON.stringify(err.response.data));
+                Promise.reject(new AxiosError(err));
+            }        
+        } else {
+            try {       
+                const response = await axios.request({
+                    method: method,
+                    url: exactUrl,
+                    headers: { Authorization: someKey },
+                });
+                console.log(response);
+    
+                return response;
+            } catch (err) {
+                console.log(JSON.stringify(err));
+                Promise.reject(new AxiosError(err));
+            }
+        }    
+    }
+
+    async sendTestRequest(){
+        let someKey = await DataManager.getInstance().getKey("POST","/v2/providers/affiliate_open_api/apis/openapi/v1/deeplink");
+        axios.defaults.baseURL = "https://api-gateway.coupang.com";
 
         try {       
             const response = await axios.request({
-                method: !!method ? method :this.REQUEST_METHOD,
-                url: !!url ? exactURL :this.URL,
-                headers: { Authorization: someKey }
-                // data: !!data ? data : null
+                method: "POST",
+                url: "/v2/providers/affiliate_open_api/apis/openapi/v1/deeplink",
+                headers: { Authorization: someKey },
+                data: { "coupangUrls": [
+                    "https://www.coupang.com/np/search?component=&q=good&channel=user", 
+                    "https://www.coupang.com/np/coupangglobal"
+                ]}
             });
             console.log(response.data);
-
-            return response;
         } catch (err) {
-            console.log(JSON.stringify(err.response.data));
-            return new AxiosError(err);
-        }    
+            console.error(err.response.data);
+        }
     }
 
     async getBestProduct(category : number) : Promise<any>{
@@ -51,6 +82,19 @@ class Data {
         this._sendRequest(url,method,null)
         .then(()=>{
             console.log("FETCHING DATA END");
+        })
+    }
+
+    async getSearchData(url : string, method : Method, keyword : string, limit : number){
+        let exactUrl = `${url}?keyword=${keyword}&limit=${limit}`;
+        return this._sendRequest(exactUrl,method,null)
+        .then((res)=>{
+            console.log(`Getting Search Result : ${res}`);
+            return Promise.resolve(res);
+        })
+        .catch((err)=>{
+            console.log(`Getting Search Error : ${err}`)
+            return Promise.reject(err);
         })
     }
 }

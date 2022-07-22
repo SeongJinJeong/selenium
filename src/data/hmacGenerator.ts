@@ -1,6 +1,8 @@
 import * as crypto from "crypto";
 import * as moment from "moment";
+import Data from ".";
 import DEFINES from "../../defines/defines";
+import DataManager from "./DataManager";
 
 class KeyGenerator {
     private _method : string = null!;
@@ -17,13 +19,12 @@ class KeyGenerator {
         this._method = method;
         this._url = url;
 
-        const parts = this._url.split(/\?/);
+        const parts = url.split(/\?/);
         const [path, query = ''] = parts;
 
         const datetime = moment.utc().format('YYMMDD[T]HHmmss[Z]');
-        const message = datetime + this._method + path + query;
+        const message = datetime + method + path + query;
 
-        console.log(datetime, message);
         const signature = crypto.createHmac('sha256', this._secretKey)
             .update(message)
             .digest('hex');
@@ -33,8 +34,3 @@ class KeyGenerator {
 }
 
 export default KeyGenerator;
-
-let test = new KeyGenerator(DEFINES.KEYS.SECRET_KEY,DEFINES.KEYS.ACCESS_KEY);
-test._generateKey("GET","https://api-gateway.coupang.com/v2/providers/affiliate_open_api/apis/openapi/v1/products/bestcategories/1016").then((key)=>{
-    console.log(key);
-});
