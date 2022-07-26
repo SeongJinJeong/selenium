@@ -10,7 +10,7 @@ class Data {
 
     }
 
-    async _sendRequest(url : string | null, method : Method | null, data? : any | null) : Promise<AxiosResponse | AxiosError> {
+    async _sendRequest(url : string | null, method : Method | null, data? : any | null) : Promise<AxiosResponse<any> | AxiosError> {
         axios.defaults.baseURL = "https://api-gateway.coupang.com";
         const exactUrl = this._insertUrl + url;
         let someKey = await DataManager.getInstance().getKey(method,exactUrl);
@@ -85,8 +85,8 @@ class Data {
         })
     }
 
-    async getSearchData(url : string, method : Method, keyword : string, limit : number){
-        let exactUrl = `${url}?keyword=${keyword}&limit=${limit}`;
+    async getSearchData(url : string, method : Method, keyword : string, limit : number) : Promise<any>{
+        let exactUrl = `${url}?keyword=${encodeURIComponent(keyword)}&limit=${limit}`;
         return this._sendRequest(exactUrl,method,null)
         .then((res)=>{
             console.log(`Getting Search Result : ${res}`);
