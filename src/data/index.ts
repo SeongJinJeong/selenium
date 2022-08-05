@@ -89,7 +89,6 @@ class Data {
         let exactUrl = `${url}?keyword=${encodeURIComponent(keyword)}&limit=${limit}`;
         return this._sendRequest(exactUrl,method,null)
         .then((res)=>{
-            console.log(`Getting Search Result : ${res}`);
             return Promise.resolve(res);
         })
         .catch((err)=>{

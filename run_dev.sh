@@ -1,8 +1,4 @@
-if [ -d dist ]; then
-    echo "============== Delete dist File ==============="
-    rm -rf dist
-    fi
-
-npx tsc
+sh build.sh
+echo "=========== Build Script Finish ================"
 
 npm run start

@@ -6,6 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "cd dist && node index.js",
+    "dev" : "npm run build && npm run start",
+    "build" : "bash build.sh",
     "compile": "npx tsc",
     "execute": "concurrently \"npm run compile\" \"npm run start\""
   },

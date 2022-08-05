@@ -23,7 +23,7 @@ class Login {
                     return this.enterID();
                 })
                 .then(()=>{
-                    return this.enterPW();
+                    return Util.getInstance().putDelay(1000,this.enterPW,this);
                 })
                 .then(()=>{
                     return this.clickLogin();

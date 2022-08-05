@@ -9,3 +9,12 @@ interface SearchProductData {
     isRocket : boolean
     isFreeShipping : boolean
 }
+
+interface AxiosSearchResponse {
+    rCode : number
+    rMessage : string,
+    data : {
+        landingUrl : string
+        productData : SearchProductData[]
+    }
+}
