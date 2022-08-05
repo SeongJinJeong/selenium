@@ -14,6 +14,8 @@ class App {
   private blog : Blog;
   private util : Util;
 
+  private static tabs : string[] = [];
+
   constructor(){
     // Init WebDriver
     App.driver = new Builder()
@@ -64,6 +66,26 @@ class App {
     options.forEach((arg)=>{
       this.options.addArguments(arg);
     })
+  }
+
+  public static addCurrentTab() : Promise<void>{
+    return App.driver.getWindowHandle().then((tabName)=>{
+      this.tabs.push(tabName);
+      return Promise.resolve();
+    })
+    .then(()=>{
+      return App.driver.getAllWindowHandles().then((tabs)=>{
+        if(tabs.length !== this.tabs.length)
+          throw new Error("tab length is not same");
+  
+        console.log("\n Add Current Tab Succeed! ");
+      })
+    })
+    .catch(console.error);
+  }
+
+  public static getTabName(index : number) : string{
+    return this.tabs[index];
   }
 
 }

@@ -12,7 +12,6 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}\\index.ts",
-            "preLaunchTask": "npx tsc",
             "outFiles": [
                 "${workspaceFolder}/dist/*.js"
             ]

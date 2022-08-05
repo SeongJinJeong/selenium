@@ -1,15 +1,20 @@
 import App from '../../index';
 import DEFINES from '../../defines/defines';
-import { By, WebElement } from 'selenium-webdriver';
+import { By, WebElement, Actions, Key } from 'selenium-webdriver';
 
 import Util from "../util";
 import Data from "../data/index"
 import { AxiosResponse } from 'axios';
 
 import DataContainer from "../data/DataContainer";
+import ContentMaker from "../contentMaker/contentMaker";
 
 class Blog {
     private _dataManager : Data = null!;
+
+    private _title : WebElement = null!;
+    private _content : WebElement = null!;
+
     constructor(){
         this._dataManager = new Data();
     }
@@ -30,12 +35,21 @@ class Blog {
             return this.getDataTest();
         })
         .then(()=>{
-            console.log(`\n\n\n Get Random Product Result : \n${JSON.stringify(DataContainer.getInstance().getProductData())}`);
+            return this.writeTitle();
         })
+        .then(()=>{
+            return this.getReviews();
+        })
+        .then((content)=>{
+            return this.writeContent(content);
+        })
+        .catch(console.error);
     }
 
     getWritePage() : Promise<void>{
-        return App.driver.get(DEFINES.PAGE_URL.BLOG_WRITE);
+        return App.driver.get(DEFINES.PAGE_URL.BLOG_WRITE).then(()=>{
+            return App.addCurrentTab();
+        });
     }
 
     switchToIFrame() : Promise<void> {
@@ -57,12 +71,11 @@ class Blog {
     }
 
     clickTitle() : Promise<void>{
-        const elem : WebElement = null!;
         const xPath : string = "//span[contains(.,'제목')]";
         return App.driver.findElement(By.xpath(xPath))
         .then((element)=>{
-            var elem = element;
-            return elem.click();
+            this._title = element;
+            return this._title.click();
         })
     }
 
@@ -81,13 +94,38 @@ class Blog {
             // })
             return Promise.resolve();
         })
-        .then(()=>{
-            App.driver.quit();
-        })
         .catch((err)=>{
             console.log(`Rejected By ${JSON.stringify(err)}`);
         })
     }
+
+    writeTitle() : Promise<void>{
+        const data : SearchProductData = DataContainer.getInstance().getNewProductData();
+        const titleName : string = data.productName + " 구매 후기!";
+
+    
+        return App.driver.actions().sendKeys(titleName).perform()
+    }
+
+    getReviews() : Promise<string> {
+        let contentMaker = new ContentMaker(DataContainer.getInstance().getCurrentData());
+        return contentMaker.getContent()
+    }
+
+    writeContent(content : string) : Promise<any>{
+        const data = DataContainer.getInstance().getCurrentData();
+
+        return App.driver.findElement(By.xpath("//span[contains(.,'본문에 #을 이용하여 태그를 사용해보세요! (최대 30개)')]"))
+        .then((elem)=>{
+            this._content = elem;
+            return this._content.click();
+        })
+        .then(()=>{
+            App.driver.getWindowHandle().then((any)=>{
+                console.log(JSON.stringify(any));
+            })
+        })
+    }
 }
 
-export default Blog;
+export default Blog;    

@@ -1,5 +1,6 @@
 class DataContainer {
     private _productData : {[key : string] : SearchProductData[]} = {};
+    private _currentData : SearchProductData = null!;
     private _serachKeywords : string[] = [];
     private _currentKeyword : string = null!;
     private static _dataContainer : DataContainer = new DataContainer();
@@ -47,7 +48,6 @@ class DataContainer {
 
     public addData(data:SearchProductData){
         console.log(`\n\n\n Data Container Add Data : \n keyword - ${this._currentKeyword} \n data - ${JSON.stringify(data)}`);
-        console.log(`\n\n\n Data Container Current Data : ${JSON.stringify(this._productData)}`);
         if(Array.isArray(this._productData[this._currentKeyword])){
             this._productData[this._currentKeyword].push(data);
         } else {
@@ -55,9 +55,14 @@ class DataContainer {
         }
     }
 
-    public getProductData() : SearchProductData {
+    public getNewProductData() : SearchProductData {
         console.log("DEBUG TEST !!!!");
-        return this._productData[this._currentKeyword].shift();
+        this._currentData = this._productData[this._currentKeyword].shift();
+        return this._currentData;
+    }
+
+    public getCurrentData() : SearchProductData {
+        return this._currentData;
     }
 }
 
