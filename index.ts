@@ -4,6 +4,7 @@ import * as Chrome from "selenium-webdriver/chrome";
 import Login from "./src/pages/Login";
 import Blog from "./src/pages/blog";
 import Util from "./src/util"
+import { Command } from "selenium-webdriver/lib/command";
 
 class App {
 

@@ -41,7 +41,11 @@ class Blog {
             return this.getReviews();
         })
         .then((content)=>{
-            return this.writeContent(content);
+            console.log("\n\n\n getReview result : ",JSON.stringify(content));
+            return Util.getInstance().putDelay<void>(3000,this.writeContent.bind(this,content),this);
+        })
+        .then(()=>{
+            return this.submitContent();
         })
         .catch(console.error);
     }
@@ -113,17 +117,28 @@ class Blog {
     }
 
     writeContent(content : string) : Promise<any>{
-        const data = DataContainer.getInstance().getCurrentData();
+        return App.driver.actions().sendKeys(Key.ENTER).perform()
+        .then(()=>{
+            return App.driver.actions().sendKeys(content).perform()
+        })
+    }
 
-        return App.driver.findElement(By.xpath("//span[contains(.,'본문에 #을 이용하여 태그를 사용해보세요! (최대 30개)')]"))
-        .then((elem)=>{
-            this._content = elem;
-            return this._content.click();
+    submitContent() : Promise<void>{
+        return App.driver.findElement(By.xpath("//div[@id='root']/div/div/div/div[3]/div[3]/button/span"))
+        .then((button)=>{
+            return button.click()
         })
         .then(()=>{
-            App.driver.getWindowHandle().then((any)=>{
-                console.log(JSON.stringify(any));
-            })
+            return App.driver.findElement(By.id("tag-input"))
+        })
+        .then((tagInput)=>{
+            return tagInput.click().then(()=>{return tagInput.sendKeys(DataContainer.getInstance().getCurrentData().keyword)});
+        })
+        .then(()=>{
+            return App.driver.findElement(By.xpath("//div[@id='root']/div/div/div/div[3]/div[3]/div/div/div/div[8]/div/button"))
+        })
+        .then((button)=>{
+            return button.click();
         })
     }
 }

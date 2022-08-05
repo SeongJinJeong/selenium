@@ -44,23 +44,25 @@ class ContentMaker {
     }
 
     private makeNewTab() : Promise<void>{
-        return App.driver.actions().sendKeys(Key.CONTROL,'t').perform()
+        return App.driver.executeScript(`window.open('${this._data.productUrl}')`)
         .then(()=>{
-            return App.driver.get(this._data.productUrl).then(()=>{
-                App.addCurrentTab();
-            });
+            return App.addCurrentTab();
         })
         ;
     }
 
     private findReviewElement() : Promise<string>{
         let reviews : string = '';
-        return App.driver.findElements(By.className("sdp-review__article__list__review__content"))
-        .then((elems)=>{
-            for(var i=0; i<elems.length; i++){
-                reviews += '\n' + elems[i].getAttribute('innerText');
-            }
-            return Promise.resolve(reviews);
+        return App.driver.manage().deleteAllCookies().then(()=>{
+            return App.driver.executeScript("window.scrollTo(0, document.body.scrollHeight)").then(()=>{
+                return App.driver.findElements(By.className("sdp-review__article__list__review__content"))
+                .then((elems)=>{
+                    for(var i=0; i<elems.length; i++){
+                        reviews += '\n' + elems[i].getAttribute('innerText');
+                    }
+                    return Promise.resolve(reviews);
+                })
+            })
         })
     }
 }
