@@ -4,30 +4,42 @@ import Util from "../util";
 
 class ContentMaker {
     private _data : SearchProductData = null!;
+    private _title : string = null!;
+    private _contents : string = null!;
 
     constructor(data : SearchProductData){
         this._data = data;
     }
 
+    public makeContent() : Promise<void> {
+        this._title = this._data.productName + " 구매 후기!";
+
+        this.getContent().then(contents=>{
+            this._contents = contents;
+        })
+    }
+
     public getContent() : Promise<string> {
         let content = '';
 
-        return this.generateFirstSection().then((sec)=>{
-            content += sec;
-            return Promise.resolve()
-        })
-        .then(()=>{
-            return this.getReview();
-        })
-        .then((cont)=>{
-            content += cont;
-            return Promise.resolve(content);
-        })
-        .then((content)=>{
-            return App.driver.switchTo().window(App.getTabName(0))
+        return App.driver.get(this._data.productUrl).then(()=>{
+            return this.generateFirstSection().then((sec)=>{
+                content += sec;
+                return Promise.resolve()
+            })
             .then(()=>{
-                return content
-            });
+                return this.getReview();
+            })
+            .then((cont)=>{
+                content += cont;
+                return Promise.resolve(content);
+            })
+            .then((content)=>{
+                return App.driver.switchTo().window(App.getTabName(0))
+                .then(()=>{
+                    return content
+                });
+            })
         })
     }
 
