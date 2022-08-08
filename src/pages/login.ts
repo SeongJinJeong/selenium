@@ -35,6 +35,24 @@ class Login {
         }
     }
 
+    doPageLoginProcess() : Promise<void> {
+        try {
+            return this.selectLoginBox()
+            .then(()=>{
+                return this.enterID();
+            })
+            .then(()=>{
+                return Util.getInstance().putDelay(1000,this.enterPW,this);
+            })
+            .then(()=>{
+                return this.clickLogin();
+            })
+        }
+        catch(err){
+            console.log(err);
+        }
+    }
+
     getLoginPage() : Promise<void> {
         return App.driver.findElement(By.className('link_login'))
         .then((webElement)=>{

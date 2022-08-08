@@ -1,4 +1,4 @@
-import {Builder, Options, WebDriver} from "selenium-webdriver";
+import {Builder, ChromiumWebDriver, Options, Session, WebDriver} from "selenium-webdriver";
 import * as Chrome from "selenium-webdriver/chrome";
 
 import Login from "./src/pages/Login";
@@ -8,7 +8,8 @@ import { Command } from "selenium-webdriver/lib/command";
 
 class App {
 
-  public static driver : WebDriver;
+  public static CDPSession;
+  public static driver : WebDriver & ChromiumWebDriver;
   private options : Chrome.Options;
 
   private login : Login;
@@ -35,22 +36,31 @@ class App {
   }
 
   run() : void{
-    try{
-      App.driver.get('https://naver.com')
-      .then(()=>{
-        return this.login.run();
-      })
-      .then(()=>{
-        return Util.getInstance().putDelay(5000,function(){
-          return this.blog.run();
-        },this);
-      })
-      .then(()=>{
-        console.log("FINISH!");
-      })
-    } catch (err){
-      console.error(err);
-    }
+    App.driver.sendAndGetDevToolsCommand("Page.addScriptToEvaluateOnNewDocument",{"source":`
+      console.log('hello');
+      Object.defineProperty(navigator,'webdriver',{get:()=>undefined})
+    `}).then((val)=>{
+      console.log(val);
+      return Promise.resolve();
+    })
+    .then(()=>{
+      try{
+        App.driver.get('https://naver.com')
+        .then(()=>{
+          return this.login.run();
+        })
+        .then(()=>{
+          return Util.getInstance().putDelay(5000,function(){
+            return this.blog.run();
+          },this);
+        })
+        .then(()=>{
+          console.log("FINISH!");
+        })
+      } catch (err){
+        console.error(err);
+      }
+    })
   }
 
   quit():void{

@@ -8,6 +8,7 @@ import { AxiosResponse } from 'axios';
 
 import DataContainer from "../data/DataContainer";
 import ContentMaker from "../contentMaker/contentMaker";
+import Login from './Login';
 
 class Blog {
     private _dataManager : Data = null!;
@@ -35,7 +36,7 @@ class Blog {
             return this.getDataTest();
         })
         .then(()=>{
-            return this.writeTitle();
+            return this.writeTitle(true);
         })
         .then(()=>{
             return this.getReviews();
@@ -103,8 +104,8 @@ class Blog {
         })
     }
 
-    writeTitle() : Promise<void>{
-        const data : SearchProductData = DataContainer.getInstance().getNewProductData();
+    writeTitle(isNew : boolean) : Promise<void>{
+        const data : SearchProductData = isNew ? DataContainer.getInstance().getNewProductData() : DataContainer.getInstance().getCurrentData();
         const titleName : string = data.productName + " 구매 후기!";
 
     
@@ -113,13 +114,35 @@ class Blog {
 
     getReviews() : Promise<string> {
         let contentMaker = new ContentMaker(DataContainer.getInstance().getCurrentData());
-        return contentMaker.getContent()
+        return contentMaker.getContent();
     }
 
     writeContent(content : string) : Promise<any>{
-        return App.driver.actions().sendKeys(Key.ENTER).perform()
+        return this.checkLoginAgain().then(()=>{
+            return App.driver.actions().sendKeys(Key.ENTER).perform()
+        })
         .then(()=>{
             return App.driver.actions().sendKeys(content).perform()
+        })
+    }
+
+    private checkLoginAgain() : Promise<any> {
+        return App.driver.findElements(By.className("se-popup-button-confirm")).then((elems : WebElement[] | any)=>{
+            if(elems.length < 1){
+                return Promise.resolve(true);
+            } else {
+                return elems[0].click()
+            }
+        })
+        .then(()=>{
+            var loginPage = new Login();
+            return loginPage.doPageLoginProcess();
+        })
+        .then(()=>{
+            return this.clickTitle();
+        })
+        .then(()=>{
+            return this.writeTitle(false);
         })
     }
 
@@ -143,4 +166,4 @@ class Blog {
     }
 }
 
-export default Blog;    
+export default Blog;
