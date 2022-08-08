@@ -14,7 +14,7 @@ class ContentMaker {
     public makeContent() : Promise<void> {
         this._title = this._data.productName + " 구매 후기!";
 
-        this.getContent().then(contents=>{
+        return this.getContent().then(contents=>{
             this._contents = contents;
         })
     }
