@@ -3,7 +3,7 @@ import DEFINES from '../../defines/defines';
 import { By, WebElement, Actions, Key } from 'selenium-webdriver';
 
 import Util from "../util";
-import Data from "../data/index"
+import DataManager from "../data/DataManager"
 import { AxiosResponse } from 'axios';
 
 import DataContainer from "../data/DataContainer";
@@ -11,13 +11,13 @@ import ContentMaker from "../contentMaker/contentMaker";
 import Login from './Login';
 
 class Blog {
-    private _dataManager : Data = null!;
+    private _dataManager : DataManager = null!;
 
     private _title : WebElement = null!;
     private _content : WebElement = null!;
 
     constructor(){
-        this._dataManager = new Data();
+        this._dataManager = new DataManager();
     }
 
     run() : Promise<void>{
@@ -33,20 +33,16 @@ class Blog {
             return Util.getInstance().putDelay(2000,this.clickTitle,this);
         })
         .then(()=>{
-            return this.getDataTest();
+            return this.writeTitle();
         })
         .then(()=>{
-            return this.writeTitle(true);
+            return Util.getInstance().putDelay<void>(3000,this.writeContent,this);
         })
         .then(()=>{
-            return this.getReviews();
-        })
-        .then((content)=>{
-            console.log("\n\n\n getReview result : ",JSON.stringify(content));
-            return Util.getInstance().putDelay<void>(3000,this.writeContent.bind(this,content),this);
+            return this.addCoupangLink();
         })
         .then(()=>{
-            return this.submitContent();
+            return Util.getInstance().putDelay<void>(3000,this.submitContent,this);
         })
         .catch(console.error);
     }
@@ -84,65 +80,29 @@ class Blog {
         })
     }
 
-    getDataTest() : Promise<any> {
-        var keyword = DataContainer.getInstance().getSearchKeyword();
-        return this._dataManager.getSearchData(DEFINES.PRODUCT_URL_GET.SEARCH.URL,"GET",keyword,10)
-        .then((res : AxiosResponse<AxiosSearchResponse,any>)=>{
-            console.log(`getDataTest Function Call : ${JSON.stringify(res.data)}`);
-            console.log(`\n\n\n Data Length : ${res.data.data.productData.length}`);
-            
-            for(var i=0; i<res.data.data.productData.length; i++){
-                DataContainer.getInstance().addData(res.data.data.productData[i]);
-            }
-            // res.data.data.productData.forEach((product)=>{
-            //     DataContainer.getInstance().addData(product);
-            // })
-            return Promise.resolve();
+    writeTitle() : Promise<void>{
+        return App.ContentMaker.getTitle().then((title)=>{
+            return App.driver.actions().sendKeys( title ).perform();
         })
-        .catch((err)=>{
-            console.log(`Rejected By ${JSON.stringify(err)}`);
-        })
+        
     }
 
-    writeTitle(isNew : boolean) : Promise<void>{
-        const data : SearchProductData = isNew ? DataContainer.getInstance().getNewProductData() : DataContainer.getInstance().getCurrentData();
-        const titleName : string = data.productName + " 구매 후기!";
-
-    
-        return App.driver.actions().sendKeys(titleName).perform()
-    }
-
-    getReviews() : Promise<string> {
-        let contentMaker = new ContentMaker(DataContainer.getInstance().getCurrentData());
-        return contentMaker.getContent();
-    }
-
-    writeContent(content : string) : Promise<any>{
-        return this.checkLoginAgain().then(()=>{
+    writeContent() : Promise<void>{
+        return App.ContentMaker.getContent().then((content)=>{
             return App.driver.actions().sendKeys(Key.ENTER).perform()
-        })
-        .then(()=>{
-            return App.driver.actions().sendKeys(content).perform()
+                .then(()=>{
+                    return App.driver.actions().sendKeys( content ).perform();
+                })
         })
     }
 
-    private checkLoginAgain() : Promise<any> {
-        return App.driver.findElements(By.className("se-popup-button-confirm")).then((elems : WebElement[] | any)=>{
-            if(elems.length < 1){
-                return Promise.resolve(true);
-            } else {
-                return elems[0].click()
-            }
-        })
-        .then(()=>{
-            var loginPage = new Login();
-            return loginPage.doPageLoginProcess();
-        })
-        .then(()=>{
-            return this.clickTitle();
-        })
-        .then(()=>{
-            return this.writeTitle(false);
+    addCoupangLink() : Promise<void>{
+        return App.ContentMaker.getProductData().then((productData)=>{
+            return App.driver.actions()
+            .sendKeys("\n\n" + productData.productUrl)
+            .sendKeys("\n\n" + productData.productImage)
+            .sendKeys("\n\n" + "파트너스 활동을 통해 일정액의 수수료를 제공받을 수 있음")
+            .perform();
         })
     }
 

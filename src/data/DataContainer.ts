@@ -1,10 +1,14 @@
+import DEFINES from "../../defines/defines";
+import DataManager from "./DataManager";
+
 class DataContainer {
-    private _productData : {[key : string] : SearchProductData[]} = {};
+    private _productDataArr : SearchProductData[] = [];
     private _currentData : SearchProductData = null!;
+
     private _serachKeywords : string[] = [];
     private _currentKeyword : string = null!;
-    private static _dataContainer : DataContainer = new DataContainer();
 
+    private static _dataContainer : DataContainer = new DataContainer();
     public static getInstance(){
         if(!this._dataContainer) this._dataContainer = new DataContainer();
 
@@ -46,23 +50,25 @@ class DataContainer {
         return keyword;
     }
 
-    public addData(data:SearchProductData){
-        console.log(`\n\n\n Data Container Add Data : \n keyword - ${this._currentKeyword} \n data - ${JSON.stringify(data)}`);
-        if(Array.isArray(this._productData[this._currentKeyword])){
-            this._productData[this._currentKeyword].push(data);
-        } else {
-            this._productData[this._currentKeyword] = [data];
+    public async getNewData() : Promise<SearchProductData> {
+        if(this._productDataArr.length < 1){
+            await this.initData();
         }
-    }
 
-    public getNewProductData() : SearchProductData {
-        console.log("DEBUG TEST !!!!");
-        this._currentData = this._productData[this._currentKeyword].shift();
+        this._currentData = this._productDataArr.shift();
         return this._currentData;
     }
 
     public getCurrentData() : SearchProductData {
         return this._currentData;
+    }
+
+    public initData() : Promise<void> {
+        var keyword = this.getSearchKeyword();
+        return DataManager.getInstance().getSearchData(DEFINES.PRODUCT_URL_GET.SEARCH,"GET",keyword,10).then((data : AxiosSearchResponse)=>{
+            this._productDataArr = data.data.productData;
+            console.log("\n\n\n Get Product Data Finish : \n"+JSON.stringify(this._productDataArr));
+        })
     }
 }
 

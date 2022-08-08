@@ -15,9 +15,12 @@ class Login {
 
     doLoginProcess() : Promise<void>{
         try {
-            return this.getLoginPage()
+            return this.gotoNaver()
                 .then(()=>{
-                    return this.selectLoginBox();
+                    return Util.getInstance().putDelay(3000,this.getLoginPage,this);
+                })
+                .then(()=>{
+                    return Util.getInstance().putDelay(3000,this.selectLoginBox,this);
                 })
                 .then(()=>{
                     return this.enterID();
@@ -51,6 +54,10 @@ class Login {
         catch(err){
             console.log(err);
         }
+    }
+
+    gotoNaver() : Promise<void> {
+        return App.driver.get('https://www.naver.com');
     }
 
     getLoginPage() : Promise<void> {

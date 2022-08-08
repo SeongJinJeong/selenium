@@ -1,81 +1,100 @@
-import { By, Key } from "selenium-webdriver";
+import { By, Key, WebElement } from "selenium-webdriver";
 import App from "../..";
+import DataContainer from "../data/DataContainer";
 import Util from "../util";
 
 class ContentMaker {
     private _data : SearchProductData = null!;
-    private _title : string = null!;
-    private _contents : string = null!;
+    private _title : string = '';
+    private _contents : string = "";
 
-    constructor(data : SearchProductData){
-        this._data = data;
+    constructor(){
+        
     }
 
-    public makeContent() : Promise<void> {
-        this._title = this._data.productName + " 구매 후기!";
-
-        return this.getContent().then(contents=>{
-            this._contents = contents;
-        })
-    }
-
-    public getContent() : Promise<string> {
-        let content = '';
-
-        return App.driver.get(this._data.productUrl).then(()=>{
-            return this.generateFirstSection().then((sec)=>{
-                content += sec;
-                return Promise.resolve()
+    // INIT
+    public run() : Promise<void> {
+        return DataContainer.getInstance().initData()
+            .then(()=>{
+                return DataContainer.getInstance().getNewData();
+            })
+            .then((data)=>{
+                this._data = data;
+                return Promise.resolve();
             })
             .then(()=>{
-                return this.getReview();
+                return this.makeTitle();
             })
-            .then((cont)=>{
-                content += cont;
-                return Promise.resolve(content);
+            .then(()=>{
+                return this.gotoCoupangPage();
             })
-            .then((content)=>{
-                return App.driver.switchTo().window(App.getTabName(0))
-                .then(()=>{
-                    return content
-                });
+            .then(()=>{
+                return Util.getInstance().putDelay(3000,this.clickReviewTab,this);
             })
+            .then(()=>{
+                return Util.getInstance().putDelay(3000,this.getReviewArticles,this);
+            })
+            .then(()=>{
+                console.log(`\n\n\n Content Maker Finish : \nTitle : ${JSON.stringify(this._title)} \nContent : ${JSON.stringify(this._contents)}`);
+                return Promise.resolve();
+            })
+    }
+
+    private makeTitle() : Promise<void>{
+        this._title = this._data.productName + " 구매 후기!";
+        return Promise.resolve();
+    }
+
+    private gotoCoupangPage() : Promise<void> {
+        return App.driver.get(this._data.productUrl);
+    }
+
+    private clickReviewTab() : Promise<void> {
+        return App.driver.findElement(By.xpath("//div[@id='btfTab']/ul/li[2]")).then((elem)=>{
+            return elem.click();
         })
     }
 
-    private generateFirstSection() : Promise<any> {
-        const content = `안녕하세요. 오늘은 ${this._data.productName} 에 대해 구매 후기를 작성해보려고 합니다...!\n`;
-        return Promise.resolve(content);
+    private getReviewArticles() : Promise<void> {
+        return App.driver.findElements(By.className("sdp-review__article__list__review__content")).then((elems)=>{
+            return this.setArticles(elems);
+        });
     }
 
-    private getReview() : Promise<string> {
-        return this.makeNewTab()
-        .then(()=>{
-            return Util.getInstance().putDelay<string>(3000,this.findReviewElement,this);
-        })
-    }
+    private setArticles(elems : WebElement[]) : Promise<void>{
+        // var arr = [];
+        // return new Promise((resolve,reject)=>{
+        //     for(var i=0; i<elems.length; i++){
+        //         elems[i].getText().then((text)=>{
+        //             this._contents += "\n\n"+text;
+        //             arr.push(elems[i]);
+        //         })
+        //     }
 
-    private makeNewTab() : Promise<void>{
-        return App.driver.executeScript(`window.open('${this._data.productUrl}')`)
-        .then(()=>{
-            return App.addCurrentTab();
-        })
-        ;
-    }
+        //     if(arr.length === elems.length) resolve();
+        // })
 
-    private findReviewElement() : Promise<string>{
-        let reviews : string = '';
-        return App.driver.manage().deleteAllCookies().then(()=>{
-            return App.driver.executeScript("window.scrollTo(0, document.body.scrollHeight)").then(()=>{
-                return App.driver.findElements(By.className("sdp-review__article__list__review__content"))
-                .then((elems)=>{
-                    for(var i=0; i<elems.length; i++){
-                        reviews += '\n' + elems[i].getAttribute('innerText');
-                    }
-                    return Promise.resolve(reviews);
+        return new Promise((resolve,reject)=>{
+            elems.forEach((elem,index)=>{
+                elem.getText().then((string)=>{
+                    this._contents += "\n\n"+string;
+                    if(index === elems.length-1) resolve();
                 })
             })
         })
+    }
+
+    // GETTER
+    public getTitle() : Promise<string>{
+        return Promise.resolve(this._title);
+    }
+
+    public getContent() : Promise<string> {
+        return Promise.resolve(this._contents);
+    }
+
+    public getProductData() : Promise<SearchProductData> {
+        return Promise.resolve(this._data);
     }
 }
 

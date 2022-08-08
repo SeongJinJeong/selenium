@@ -1,8 +1,5 @@
 import * as crypto from "crypto";
 import * as moment from "moment";
-import Data from ".";
-import DEFINES from "../../defines/defines";
-import DataManager from "./DataManager";
 
 class KeyGenerator {
     private _method : string = null!;

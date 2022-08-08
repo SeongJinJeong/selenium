@@ -5,11 +5,13 @@ import Login from "./src/pages/Login";
 import Blog from "./src/pages/blog";
 import Util from "./src/util"
 import { Command } from "selenium-webdriver/lib/command";
+import ContentMaker from "./src/contentMaker/contentMaker";
 
 class App {
 
-  public static CDPSession;
+  public static ContentMaker : ContentMaker;
   public static driver : WebDriver & ChromiumWebDriver;
+  
   private options : Chrome.Options;
 
   private login : Login;
@@ -39,13 +41,18 @@ class App {
     App.driver.sendAndGetDevToolsCommand("Page.addScriptToEvaluateOnNewDocument",{"source":`
       console.log('hello');
       Object.defineProperty(navigator,'webdriver',{get:()=>undefined})
-    `}).then((val)=>{
+    `})
+    .then((val)=>{
       console.log(val);
       return Promise.resolve();
     })
     .then(()=>{
       try{
         App.driver.get('https://naver.com')
+        .then(()=>{
+          App.ContentMaker = new ContentMaker();
+          return App.ContentMaker.run();
+        })
         .then(()=>{
           return this.login.run();
         })
