@@ -2,6 +2,7 @@ import { By, Key, WebElement } from "selenium-webdriver";
 import App from "../..";
 import DataContainer from "../data/DataContainer";
 import Util from "../util";
+import Papago from "./Papago";
 
 class ContentMaker {
     private _data : SearchProductData = null!;
@@ -62,23 +63,13 @@ class ContentMaker {
     }
 
     private setArticles(elems : WebElement[]) : Promise<void>{
-        // var arr = [];
-        // return new Promise((resolve,reject)=>{
-        //     for(var i=0; i<elems.length; i++){
-        //         elems[i].getText().then((text)=>{
-        //             this._contents += "\n\n"+text;
-        //             arr.push(elems[i]);
-        //         })
-        //     }
-
-        //     if(arr.length === elems.length) resolve();
-        // })
-
         return new Promise((resolve,reject)=>{
             elems.forEach((elem,index)=>{
                 elem.getText().then((string)=>{
-                    this._contents += "\n\n"+string;
-                    if(index === elems.length-1) resolve();
+                    Papago.getInstance().runCrawling(string).then((text)=>{
+                        this._contents += text;
+                        if(index === elems.length-1) resolve();
+                    })
                 })
             })
         })

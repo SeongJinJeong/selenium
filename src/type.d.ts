@@ -18,3 +18,20 @@ interface AxiosSearchResponse {
         productData : SearchProductData[]
     }
 }
+
+interface AxiosPapagoResponse {
+    message: {
+        result: {
+            srcLangType: string,
+            tarLangType: string,
+            translatedText: string,
+            engineType: string,
+            pivot: any,
+            dict: any,
+            tarDict: any
+        },
+        "@type": string,
+        "@service": string,
+        "@version": string
+    }
+}

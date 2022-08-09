@@ -106,6 +106,10 @@ class App {
     return this.tabs[index];
   }
 
+  public static removeLastTab() : void {
+    this.tabs.pop();
+  }
+
 }
 
 export default App;
