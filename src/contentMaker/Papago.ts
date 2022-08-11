@@ -76,7 +76,14 @@ class Papago {
     // Crawling From Papago Page
     private openNewTab() : Promise<void>{
         return App.driver.executeScript('window.open()').then(()=>{
-            App.addCurrentTab();
+            let tabName = '';
+            return App.driver.getAllWindowHandles().then(arr=>{
+                tabName = arr[1];
+                return App.driver.switchTo().window(tabName)
+                .then(()=>{
+                    return App.addCurrentTab();
+                })
+            })
         })
     }
 
@@ -115,21 +122,28 @@ class Papago {
         return App.driver.actions().sendKeys(this.englishText).perform();
     }
 
-    private getKoreanTarget() : Promise<string> {
+    private async getKoreanTarget() : Promise<string> {
         return App.driver.findElement(By.id("txtTarget")).then((elem)=>{
-            return elem.getText()
+            let text = '';
+            return elem.getText().then((txt)=>{
+                text = txt;
+                return Promise.resolve(text);
+            })
         })
     }
 
     private closeCurrentTab() : Promise<void> {
         return App.driver.executeScript('window.close()').then(()=>{
             App.removeLastTab();
-            Promise.resolve();
+            return App.driver.switchTo().window(App.getTabName(0))
         })
     }
 
     public runCrawling(text : string) : Promise<string | void>{
-        return this.getTranslatePage()
+        return this.openNewTab()
+        .then(()=>{
+            return this.getTranslatePage()
+        })
         .then(()=>{
             return Util.getInstance().putDelay(3000,this.getTextInput,this);
         })
@@ -137,7 +151,7 @@ class Papago {
             return this.inputText(text);
         })
         .then(()=>{
-            return this.getEnglishTarget();
+            return Util.getInstance().putDelay(3000,this.getEnglishTarget,this);
         })
         .then(()=>{
             return Util.getInstance().putDelay(3000,this.clearInput,this);
@@ -146,7 +160,7 @@ class Papago {
             return this.inputEnglishText();
         })
         .then(()=>{
-            return this.getKoreanTarget().then((string)=>{
+            return Util.getInstance().putDelay<string>(5000,this.getKoreanTarget,this).then((string)=>{
                 return Util.getInstance().putDelay(3000,this.closeCurrentTab,this).then(()=>{
                     return Promise.resolve(string);
                 })

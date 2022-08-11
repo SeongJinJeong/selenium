@@ -39,6 +39,9 @@ class Blog {
             return Util.getInstance().putDelay<void>(3000,this.writeContent,this);
         })
         .then(()=>{
+            return this.addImages();
+        })
+        .then(()=>{
             return this.addCoupangLink();
         })
         .then(()=>{
@@ -48,9 +51,7 @@ class Blog {
     }
 
     getWritePage() : Promise<void>{
-        return App.driver.get(DEFINES.PAGE_URL.BLOG_WRITE).then(()=>{
-            return App.addCurrentTab();
-        });
+        return App.driver.get(DEFINES.PAGE_URL.BLOG_WRITE);
     }
 
     switchToIFrame() : Promise<void> {
@@ -93,6 +94,50 @@ class Blog {
                 .then(()=>{
                     return App.driver.actions().sendKeys( content ).perform();
                 })
+        })
+    }
+
+    private async addImages() : Promise<void>{
+        for(let i=0; i<App.ContentMaker.getProductImageArr().length; i++){
+            await this.clickLinkImageButton()
+            // await this.clickImageUrlInput();
+            await this.inputImageUrl();
+            await this.clickUrlSearchButton();
+            await this.clickImageLinkConfirm();
+        }
+        return;
+    }
+
+    private clickLinkImageButton() : Promise<void> {
+        return App.driver.findElement(By.className("se-oglink-toolbar-button")).then((elem)=>{
+            return elem.click();
+        })
+    }
+
+    private clickImageUrlInput() : Promise<void> {
+        return App.driver.findElement(By.className("se-popup-oglink-input")).then((elem)=>{
+            return elem.click();
+        })
+    }
+
+    private inputImageUrl() : Promise<void> {
+        let imageUrl = "";
+        do{
+            imageUrl = App.ContentMaker.getProductImage();
+        } while (!imageUrl)
+
+        return App.driver.actions().sendKeys(imageUrl).perform();
+    }
+
+    private clickUrlSearchButton() : Promise<void> {
+        return App.driver.findElement(By.className("se-popup-oglink-button")).then((elem)=>{
+            return elem.click();
+        })
+    }
+
+    private clickImageLinkConfirm() : Promise<void> {
+        return App.driver.findElement(By.className("se-popup-button-confirm")).then((elem)=>{
+            return elem.click();
         })
     }
 

@@ -1,5 +1,5 @@
-import {Builder, ChromiumWebDriver, Options, Session, WebDriver} from "selenium-webdriver";
-import * as Chrome from "selenium-webdriver/chrome";
+import {Builder, ChromiumWebDriver, Session, WebDriver} from "selenium-webdriver";
+import {Options} from "selenium-webdriver/chrome";
 
 import Login from "./src/pages/Login";
 import Blog from "./src/pages/blog";
@@ -12,7 +12,7 @@ class App {
   public static ContentMaker : ContentMaker;
   public static driver : WebDriver & ChromiumWebDriver;
   
-  private options : Chrome.Options;
+  private options : Options;
 
   private login : Login;
   private blog : Blog;
@@ -22,6 +22,26 @@ class App {
 
   constructor(){
     // Init WebDriver
+    this.options = new Options();
+    this.options.setUserPreferences(
+      {
+        profile: {
+          content_settings: {
+              exceptions: {
+                  clipboard: {
+                      ['https://blog.naver.com,*']:
+                          {
+                              "expiration": "0",
+                              "last_modified": Date.now(),
+                              "model": 0,
+                              "setting": 1
+                          },
+                  }
+              }
+          }
+      }
+      }
+    )
     App.driver = new Builder()
     .setChromeOptions(this.options)
     .forBrowser('chrome')
@@ -50,8 +70,10 @@ class App {
       try{
         App.driver.get('https://naver.com')
         .then(()=>{
-          App.ContentMaker = new ContentMaker();
-          return App.ContentMaker.run();
+          return App.addCurrentTab().then(()=>{
+            App.ContentMaker = new ContentMaker();
+            return App.ContentMaker.run();
+          })
         })
         .then(()=>{
           return this.login.run();
