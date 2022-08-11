@@ -103,7 +103,7 @@ class Blog {
             // await this.clickImageUrlInput();
             await this.inputImageUrl();
             await this.clickUrlSearchButton();
-            await this.clickImageLinkConfirm();
+            await Util.getInstance().putDelay(3000,this.clickImageLinkConfirm,this);
         }
         return;
     }
