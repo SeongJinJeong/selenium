@@ -10,6 +10,7 @@ import DEFINES from "./defines/defines";
 
 class App {
 
+  public static killProcess : boolean = false;
   public static isRunning : boolean = false;
 
   public static ContentMaker : ContentMaker;
@@ -157,12 +158,20 @@ function runApp(){
   try {
     setTimeout(function(){
       app.run().then(()=>{
+        if(App.killProcess){
+          return;
+        }
         runApp();
       })
     },App.isRunning ? DEFINES.DELAY_TIME.EXECUTE_TERM : 1000);
   } catch (err){
     console.log("\n\n\n\n\n\n ERROR!!!!!! "+err+"\n\n\n\n\n\n");
     console.log("\n\n\n\n\n\n RESTART APP!!!! \n\n\n\n\n\n");
+
+    if(App.killProcess){
+      return;
+    }
+
     App.isRunning = false;
     app.quit().then(()=>{
       runApp();

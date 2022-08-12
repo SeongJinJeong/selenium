@@ -1,3 +1,4 @@
+import App from "../..";
 import DEFINES from "../../defines/defines";
 import DataManager from "./DataManager";
 
@@ -19,6 +20,10 @@ class DataContainer {
         this.resetSearchKeywords();
     }
 
+    private killProcess() : void{
+        App.killProcess = true;
+    }
+
     public resetSearchKeywords() : void {
         const keywords = DEFINES.SEARCH_KEYWORDS;
         this._serachKeywords = [...keywords];
@@ -26,7 +31,10 @@ class DataContainer {
 
     public getSearchKeyword() : string {
         if(this._serachKeywords.length < 1) {
-            this.resetSearchKeywords();
+            // this.resetSearchKeywords();
+            console.log("\n\n\n\n\n All Keywords Executed!! \n\n\n\n\n");
+            this.killProcess();
+            throw new Error("ALL PROCESS FINISH");
         }
 
         const index = Math.floor(Math.random() * this._serachKeywords.length);
