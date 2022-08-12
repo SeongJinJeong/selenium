@@ -20,21 +20,7 @@ class DataContainer {
     }
 
     public resetSearchKeywords() : void {
-        const keywords = [
-            "65인치 티비",
-            "세탁기",
-            "냉장고",
-            "대형 가전",
-            "아이폰 13",
-            "갤럭시 폴드",
-            "에어컨",
-            "일렉 기타",
-            "맥북",
-            "삼성 노트북",
-            "LG 그램",
-            "커세어 키보드",
-            "스타일러",
-        ]
+        const keywords = DEFINES.SEARCH_KEYWORDS;
         this._serachKeywords = [...keywords];
     }
 
