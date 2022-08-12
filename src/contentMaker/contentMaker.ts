@@ -31,6 +31,7 @@ class ContentMaker {
             })
             .then((data)=>{
                 this._data = data;
+                console.log(this._data.keyword);
                 return Promise.resolve();
             })
             .then(()=>{
