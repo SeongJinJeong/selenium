@@ -1,6 +1,7 @@
 import { By, Key, WebElement } from "selenium-webdriver";
 import { elementsLocated } from "selenium-webdriver/lib/until";
 import App from "../..";
+import DEFINES from "../../defines/defines";
 import DataContainer from "../data/DataContainer";
 import Util from "../util";
 import Papago from "./Papago";
@@ -13,6 +14,13 @@ class ContentMaker {
 
     constructor(){
         
+    }
+
+    reset() : void {
+        this._data = null;
+        this._title = '';
+        this._contents = "";
+        this._images = [];
     }
 
     // INIT
@@ -86,8 +94,10 @@ class ContentMaker {
 
     private getReviewArticles() : Promise<void> {
         return App.driver.findElements(By.className("sdp-review__article__list__review__content")).then((elems)=>{
-            if(elems.length < 1)
-                return Promise.reject("\n\nNo Review Articles!");
+            if(elems.length < 1){
+                this.reset();
+                return this.run();
+            }
 
             return this.setArticles(elems);
         });

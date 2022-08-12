@@ -6,6 +6,7 @@ import Blog from "./src/pages/blog";
 import Util from "./src/util"
 import { Command } from "selenium-webdriver/lib/command";
 import ContentMaker from "./src/contentMaker/contentMaker";
+import DEFINES from "./defines/defines";
 
 class App {
 
@@ -95,6 +96,7 @@ class App {
         })
         .then(()=>{
           App.isRunning = true;
+          App.ContentMaker.reset();
           console.log("FINISH!");
           return Promise.resolve();
         })
@@ -105,8 +107,8 @@ class App {
     })
   }
 
-  quit():void{
-    App.driver.quit();
+  quit():Promise<void>{
+    return App.driver.quit();
   }
 
   setOptions(opts : string[] | string) : void{
@@ -152,15 +154,24 @@ export default App;
 var app = new App();
 
 function runApp(){
-  setTimeout(function(){
-    app.run().then(()=>{
+  try {
+    setTimeout(function(){
+      app.run().then(()=>{
+        runApp();
+      })
+    },App.isRunning ? DEFINES.DELAY_TIME.EXECUTE_TERM : 1000);
+  } catch (err){
+    console.log("\n\n\n\n\n\n ERROR!!!!!! "+err+"\n\n\n\n\n\n");
+    console.log("\n\n\n\n\n\n RESTART APP!!!! \n\n\n\n\n\n");
+    App.isRunning = false;
+    app.quit().then(()=>{
       runApp();
     })
-  },5000);
+  }
 }
 
 try {
-  runApp()
+  runApp();
 } catch(err){
   console.log(err);
 }

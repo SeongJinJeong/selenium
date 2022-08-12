@@ -45,9 +45,6 @@ class Blog {
             return this.addImages();
         })
         .then(()=>{
-            return this.addCoupangLink();
-        })
-        .then(()=>{
             return Util.getInstance().putDelay<void>(3000,this.submitContent,this);
         })
         .catch(console.error);
@@ -108,7 +105,12 @@ class Blog {
         return App.ContentMaker.getContent().then((content)=>{
             return App.driver.actions().sendKeys(Key.ENTER).perform()
                 .then(()=>{
-                    return App.driver.actions().sendKeys( content ).perform();
+                    return this.addCoupangLink();
+                })
+                .then(()=>{
+                    return Util.getInstance().putDelay<void>(3000,function(){
+                        return App.driver.actions().sendKeys( content ).perform();
+                    },this);
                 })
         })
     }
