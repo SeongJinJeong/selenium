@@ -28,7 +28,12 @@ class DataContainer {
             "아이폰 13",
             "갤럭시 폴드",
             "에어컨",
-            "일렉 기타"
+            "일렉 기타",
+            "맥북",
+            "삼성 노트북",
+            "LG 그램",
+            "커세어 키보드",
+            "스타일러",
         ]
         this._serachKeywords = [...keywords];
     }

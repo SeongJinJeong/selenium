@@ -9,6 +9,8 @@ import ContentMaker from "./src/contentMaker/contentMaker";
 
 class App {
 
+  public static isRunning : boolean = false;
+
   public static ContentMaker : ContentMaker;
   public static driver : WebDriver & ChromiumWebDriver;
   
@@ -57,8 +59,8 @@ class App {
     this.util = new Util();
   }
 
-  run() : void{
-    App.driver.sendAndGetDevToolsCommand("Page.addScriptToEvaluateOnNewDocument",{"source":`
+  run() : Promise<void>{
+    return App.driver.sendAndGetDevToolsCommand("Page.addScriptToEvaluateOnNewDocument",{"source":`
       console.log('hello');
       Object.defineProperty(navigator,'webdriver',{get:()=>undefined})
     `})
@@ -68,14 +70,22 @@ class App {
     })
     .then(()=>{
       try{
-        App.driver.get('https://naver.com')
+        return App.driver.get('https://naver.com')
         .then(()=>{
-          return App.addCurrentTab().then(()=>{
-            App.ContentMaker = new ContentMaker();
+          
+          if(App.isRunning){
             return App.ContentMaker.run();
-          })
+          } else {
+            return App.addCurrentTab().then(()=>{
+              App.ContentMaker = new ContentMaker();
+              return App.ContentMaker.run();
+            })
+          }
         })
         .then(()=>{
+          if(App.isRunning){
+            return Promise.resolve();
+          }
           return this.login.run();
         })
         .then(()=>{
@@ -84,10 +94,13 @@ class App {
           },this);
         })
         .then(()=>{
+          App.isRunning = true;
           console.log("FINISH!");
+          return Promise.resolve();
         })
       } catch (err){
         console.error(err);
+        return Promise.reject(err);
       }
     })
   }
@@ -137,4 +150,17 @@ class App {
 export default App;
 
 var app = new App();
-app.run();
+
+function runApp(){
+  setTimeout(function(){
+    app.run().then(()=>{
+      runApp();
+    })
+  },5000);
+}
+
+try {
+  runApp()
+} catch(err){
+  console.log(err);
+}

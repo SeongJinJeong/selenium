@@ -17,7 +17,7 @@ class ContentMaker {
 
     // INIT
     public run() : Promise<void> {
-        return DataContainer.getInstance().initData()
+        return this.initData()
             .then(()=>{
                 return DataContainer.getInstance().getNewData();
             })
@@ -46,6 +46,14 @@ class ContentMaker {
             })
     }
 
+    private initData() : Promise<void> {
+        if(App.isRunning){
+            return Promise.resolve();
+        }  else {
+            return DataContainer.getInstance().initData(); 
+        }
+    }
+
     private makeTitle() : Promise<void>{
         this._title = this._data.productName + " 구매 후기!";
         return Promise.resolve();
@@ -61,8 +69,11 @@ class ContentMaker {
         })
     }
 
-    private getReviewImages() : Promise<void> {
+    private getReviewImages() : Promise<void | string> {
         return App.driver.findElements(By.className("js_reviewListGalleryImage")).then( async elems=>{
+            if(elems.length < 1){
+                return Promise.resolve("\n\nNo Review Images!");
+            }
             for(let i=0; i<elems.length; i++){
                 await this.setImageStrings(elems[i]);
             }
@@ -76,7 +87,7 @@ class ContentMaker {
     private getReviewArticles() : Promise<void> {
         return App.driver.findElements(By.className("sdp-review__article__list__review__content")).then((elems)=>{
             if(elems.length < 1)
-                return Promise.resolve();
+                return Promise.reject("\n\nNo Review Articles!");
 
             return this.setArticles(elems);
         });

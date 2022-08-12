@@ -24,7 +24,10 @@ class Blog {
         console.log("Blog Started!");
         return this.getWritePage()
         .then(()=>{
-            return Util.getInstance().putDelay(5000,this.switchToIFrame,this);
+            return Util.getInstance().putDelay(5000,this.checkExistContent,this);
+        })
+        .then(()=>{
+            return Util.getInstance().putDelay(2000,this.switchToIFrame,this);
         })
         .then(()=>{
             return Util.getInstance().putDelay(2000,this.clickHelpCloseButton,this);
@@ -54,6 +57,16 @@ class Blog {
         return App.driver.get(DEFINES.PAGE_URL.BLOG_WRITE);
     }
 
+    checkExistContent() : Promise<void> {
+        return App.driver.findElements(By.className("se-popup-button-cancel")).then((elems)=>{
+            if(elems.length > 0){
+                return elems[0].click();
+            } else {
+                return Promise.resolve();
+            }
+        })
+    }
+
     switchToIFrame() : Promise<void> {
         return App.driver.findElement(By.name("mainFrame")).then((frame)=>{
             console.log("Switch iFrame : ",JSON.stringify(frame));
@@ -64,11 +77,14 @@ class Blog {
     
     clickHelpCloseButton() : Promise<void>{
         let elem : WebElement = null!;
-        return App.driver.findElement(By.className("se-help-panel-close-button"))
+        return App.driver.findElements(By.className("se-help-panel-close-button"))
         .then((e)=>{
-            elem = e;
+            if(e.length < 1){
+                return Promise.resolve();
+            }
+            elem = e[0];
             console.log("ClickHelpCloseButton : ",elem);
-            e.click();
+            e[0].click();
         })
     }
 
@@ -101,8 +117,8 @@ class Blog {
         for(let i=0; i<App.ContentMaker.getProductImageArr().length; i++){
             await this.clickLinkImageButton()
             // await this.clickImageUrlInput();
-            await this.inputImageUrl();
-            await this.clickUrlSearchButton();
+            await Util.getInstance().putDelay(1000,this.inputImageUrl,this);
+            await Util.getInstance().putDelay(1000,this.clickUrlSearchButton,this);
             await Util.getInstance().putDelay(3000,this.clickImageLinkConfirm,this);
         }
         return;
@@ -142,13 +158,23 @@ class Blog {
     }
 
     addCoupangLink() : Promise<void>{
-        return App.ContentMaker.getProductData().then((productData)=>{
-            return App.driver.actions()
-            .sendKeys("\n\n" + productData.productUrl)
-            .sendKeys("\n\n" + productData.productImage)
-            .sendKeys("\n\n" + "파트너스 활동을 통해 일정액의 수수료를 제공받을 수 있음")
-            .perform();
+        return App.ContentMaker.getProductData().then( async (productData)=>{
+            await Util.getInstance().putDelay(1000,this.sendProductUrlKey.bind(this,productData.productUrl),this);
+            await Util.getInstance().putDelay(1000,this.sendProductImageKey.bind(this,productData.productImage),this);
+            await Util.getInstance().putDelay(1000,this.sendDescKey.bind(this,"파트너스 활동을 통해 일정액의 수수료를 제공받을 수 있음"),this);
         })
+    }
+
+    sendProductUrlKey(url : string) : Promise<void>{
+        return App.driver.actions().sendKeys("\n\n"+url).perform();
+    }
+
+    sendProductImageKey(url : string) : Promise<void>{
+        return App.driver.actions().sendKeys("\n\n"+url).perform();
+    }
+
+    sendDescKey(desc : string) : Promise<void>{
+        return App.driver.actions().sendKeys("\n\n"+desc).perform();
     }
 
     submitContent() : Promise<void>{

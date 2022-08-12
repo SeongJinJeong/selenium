@@ -139,6 +139,12 @@ class Papago {
         })
     }
 
+    private clickTranslate() : Promise<void> {
+        return App.driver.findElement(By.id("btnTranslate")).then((elem)=>{
+            return elem.click();
+        })
+    }
+
     public runCrawling(text : string) : Promise<string | void>{
         return this.openNewTab()
         .then(()=>{
@@ -151,6 +157,9 @@ class Papago {
             return this.inputText(text);
         })
         .then(()=>{
+            return Util.getInstance().putDelay(3000,this.clickTranslate,this);
+        })
+        .then(()=>{
             return Util.getInstance().putDelay(3000,this.getEnglishTarget,this);
         })
         .then(()=>{
@@ -158,6 +167,9 @@ class Papago {
         })
         .then(()=>{
             return this.inputEnglishText();
+        })
+        .then(()=>{
+            return Util.getInstance().putDelay(3000,this.clickTranslate,this);
         })
         .then(()=>{
             return Util.getInstance().putDelay<string>(5000,this.getKoreanTarget,this).then((string)=>{
