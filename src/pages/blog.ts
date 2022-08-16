@@ -104,14 +104,18 @@ class Blog {
     writeContent() : Promise<void>{
         return App.ContentMaker.getContent().then((content)=>{
             return App.driver.actions().sendKeys(Key.ENTER).perform()
-                .then(()=>{
-                    return this.addCoupangLink();
-                })
-                .then(()=>{
-                    return Util.getInstance().putDelay<void>(3000,function(){
-                        return App.driver.actions().sendKeys( content ).perform();
-                    },this);
-                })
+            .then(async ()=>{
+                const productData = await App.ContentMaker.getProductData();
+                await Util.getInstance().putDelay(1000,this.sendProductImageKey.bind(this,productData.productImage),this);
+            })
+            .then(()=>{
+                return Util.getInstance().putDelay<void>(3000,function(){
+                    return App.driver.actions().sendKeys( content ).perform();
+                },this);
+            })
+            .then(()=>{
+                return this.addCoupangLink();
+            })
         })
     }
 
