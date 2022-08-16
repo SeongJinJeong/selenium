@@ -176,7 +176,7 @@ class Blog {
     }
 
     sendProductImageKey(url : string) : Promise<void>{
-        return App.driver.actions().sendKeys("\n\n"+url).perform();
+        return App.driver.actions().sendKeys("\n\n"+url+"\n").perform();
     }
 
     sendDescKey(desc : string) : Promise<void>{
