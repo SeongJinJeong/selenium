@@ -119,6 +119,13 @@ class Blog {
         })
     }
 
+    private async addImageProcess(url : string) : Promise<void> {
+        await this.clickLinkImageButton();
+        await Util.getInstance().putDelay(1000,this.inputImageUrl.bind(this,url),this);
+        await Util.getInstance().putDelay(1000,this.clickUrlSearchButton,this);
+        await Util.getInstance().putDelay(3000,this.clickImageLinkConfirm,this);
+    }
+
     private async addImages() : Promise<void>{
         for(let i=0; i<App.ContentMaker.getProductImageArr().length; i++){
             await this.clickLinkImageButton()
@@ -142,12 +149,16 @@ class Blog {
         })
     }
 
-    private inputImageUrl() : Promise<void> {
+    private inputImageUrl(url? : string) : Promise<void> {
         let imageUrl = "";
-        do{
-            imageUrl = App.ContentMaker.getProductImage();
-        } while (!imageUrl)
-
+        
+        if(!!url) imageUrl = url;
+        else {
+            do{
+                imageUrl = App.ContentMaker.getProductImage();
+            } while (!imageUrl)
+        }
+        
         return App.driver.actions().sendKeys(imageUrl).perform();
     }
 
@@ -175,8 +186,8 @@ class Blog {
         return App.driver.actions().sendKeys("\n\n"+url).perform();
     }
 
-    sendProductImageKey(url : string) : Promise<void>{
-        return App.driver.actions().sendKeys("\n\n"+url+"\n").perform();
+    async sendProductImageKey(url : string) : Promise<void>{
+        await this.addImageProcess(url);
     }
 
     sendDescKey(desc : string) : Promise<void>{
