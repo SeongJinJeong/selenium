@@ -73,8 +73,12 @@ class ContentMaker {
     }
 
     private clickReviewTab() : Promise<void> {
-        return App.driver.findElement(By.xpath("//div[@id='btfTab']/ul/li[2]")).then((elem)=>{
-            return elem.click();
+        return App.driver.findElements(By.xpath("//div[@id='btfTab']/ul/li[2]")).then((elems)=>{
+            if(elems.length < 1){
+                this.reset();
+                return this.run();
+            }
+            return elems[0].click();
         })
     }
 
