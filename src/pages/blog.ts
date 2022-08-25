@@ -20,103 +20,74 @@ class Blog {
         this._dataManager = new DataManager();
     }
 
-    run() : Promise<void>{
+    async run() : Promise<void>{
         console.log("Blog Started!");
-        return this.getWritePage()
-        .then(()=>{
-            return Util.getInstance().putDelay(5000,this.checkExistContent,this);
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay(2000,this.switchToIFrame,this);
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay(2000,this.clickHelpCloseButton,this);
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay(2000,this.clickTitle,this);
-        })
-        .then(()=>{
-            return this.writeTitle();
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay<void>(3000,this.writeContent,this);
-        })
-        .then(()=>{
-            return this.addImages();
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay<void>(3000,this.submitContent,this);
-        })
-        .catch(console.error);
+        try {
+            await this.getWritePage();
+            await Util.getInstance().putDelay(5000,this.checkExistContent,this);
+            await Util.getInstance().putDelay(2000,this.switchToIFrame,this);
+            await Util.getInstance().putDelay(2000,this.clickHelpCloseButton,this);
+            await Util.getInstance().putDelay(2000,this.clickTitle,this);
+            await this.writeTitle();
+            await Util.getInstance().putDelay<void>(3000,this.writeContent,this);
+            await this.addImages();
+            await Util.getInstance().putDelay<void>(3000,this.submitContent,this);
+        } catch (err) {
+            console.log(err);
+        }
     }
 
-    getWritePage() : Promise<void>{
-        return App.driver.get(DEFINES.PAGE_URL.BLOG_WRITE);
+    async getWritePage() : Promise<void>{
+        await App.driver.get(DEFINES.PAGE_URL.BLOG_WRITE);
     }
 
-    checkExistContent() : Promise<void> {
-        return App.driver.findElements(By.className("se-popup-button-cancel")).then((elems)=>{
-            if(elems.length > 0){
-                return elems[0].click();
-            } else {
-                return Promise.resolve();
-            }
-        })
+    async checkExistContent() : Promise<void> {
+        const elems = await App.driver.findElements(By.className("se-popup-button-cancel"))
+        if(elems.length > 0){
+            await elems[0].click();
+        }
     }
 
-    switchToIFrame() : Promise<void> {
-        return App.driver.findElement(By.name("mainFrame")).then((frame)=>{
-            console.log("Switch iFrame : ",JSON.stringify(frame));
-            return App.driver.switchTo().frame(frame);
-        })
+    async switchToIFrame() : Promise<void> {
+        const frame = await App.driver.findElement(By.name("mainFrame"))
+        console.log("Switch iFrame : ",JSON.stringify(frame));
+        
+        await App.driver.switchTo().frame(frame);
     }
 
     
-    clickHelpCloseButton() : Promise<void>{
+    async clickHelpCloseButton() : Promise<void>{
         let elem : WebElement = null!;
-        return App.driver.findElements(By.className("se-help-panel-close-button"))
-        .then((e)=>{
-            if(e.length < 1){
-                return Promise.resolve();
-            }
-            elem = e[0];
-            console.log("ClickHelpCloseButton : ",elem);
-            e[0].click();
-        })
+        const e = await App.driver.findElements(By.className("se-help-panel-close-button"))
+        if(e.length < 1){
+            return Promise.resolve();
+        }
+        elem = e[0];
+        console.log("ClickHelpCloseButton : ",elem);
+        await e[0].click();
     }
 
-    clickTitle() : Promise<void>{
+    async clickTitle() : Promise<void>{
         const xPath : string = "//span[contains(.,'제목')]";
-        return App.driver.findElement(By.xpath(xPath))
-        .then((element)=>{
-            this._title = element;
-            return this._title.click();
-        })
+        const element = await App.driver.findElement(By.xpath(xPath))
+        this._title = element;
+        await this._title.click();
     }
 
-    writeTitle() : Promise<void>{
-        return App.ContentMaker.getTitle().then((title)=>{
-            return App.driver.actions().sendKeys( title ).perform();
-        })
-        
+    async writeTitle() : Promise<void>{
+        const title = await App.ContentMaker.getTitle();
+        await App.driver.actions().sendKeys( title ).perform();
     }
 
-    writeContent() : Promise<void>{
-        return App.ContentMaker.getContent().then((content)=>{
-            return App.driver.actions().sendKeys(Key.ENTER).perform()
-            .then(async ()=>{
-                const productData = await App.ContentMaker.getProductData();
-                await Util.getInstance().putDelay(1000,this.sendProductImageKey.bind(this,productData.productImage),this);
-            })
-            .then(()=>{
-                return Util.getInstance().putDelay<void>(3000,function(){
-                    return App.driver.actions().sendKeys( content ).perform();
-                },this);
-            })
-            .then(()=>{
-                return this.addCoupangLink();
-            })
-        })
+    async writeContent() : Promise<void>{
+        const content = await App.ContentMaker.getContent();
+        await App.driver.actions().sendKeys(Key.ENTER).perform()
+        const productData = await App.ContentMaker.getProductData();
+        await Util.getInstance().putDelay(1000,this.sendProductImageKey.bind(this,productData.productImage),this);
+        await Util.getInstance().putDelay<void>(3000,function(){
+            return App.driver.actions().sendKeys( content ).perform();
+        },this);
+        await this.addCoupangLink();
     }
 
     private async addImageProcess(url : string) : Promise<void> {
@@ -137,19 +108,17 @@ class Blog {
         return;
     }
 
-    private clickLinkImageButton() : Promise<void> {
-        return App.driver.findElement(By.className("se-oglink-toolbar-button")).then((elem)=>{
-            return elem.click();
-        })
+    private async clickLinkImageButton() : Promise<void> {
+        const elem = await App.driver.findElement(By.className("se-oglink-toolbar-button"))
+        await elem.click();
     }
 
-    private clickImageUrlInput() : Promise<void> {
-        return App.driver.findElement(By.className("se-popup-oglink-input")).then((elem)=>{
-            return elem.click();
-        })
+    private async clickImageUrlInput() : Promise<void> {
+        const elem = await App.driver.findElement(By.className("se-popup-oglink-input"));
+        await elem.click();
     }
 
-    private inputImageUrl(url? : string) : Promise<void> {
+    private async inputImageUrl(url? : string) : Promise<void> {
         let imageUrl = "";
         
         if(!!url) imageUrl = url;
@@ -159,58 +128,46 @@ class Blog {
             } while (!imageUrl)
         }
         
-        return App.driver.actions().sendKeys(imageUrl).perform();
+        await App.driver.actions().sendKeys(imageUrl).perform();
     }
 
-    private clickUrlSearchButton() : Promise<void> {
-        return App.driver.findElement(By.className("se-popup-oglink-button")).then((elem)=>{
-            return elem.click();
-        })
+    private async clickUrlSearchButton() : Promise<void> {
+        const elem = await App.driver.findElement(By.className("se-popup-oglink-button"));
+        await elem.click();
     }
 
-    private clickImageLinkConfirm() : Promise<void> {
-        return App.driver.findElement(By.className("se-popup-button-confirm")).then((elem)=>{
-            return elem.click();
-        })
+    private async clickImageLinkConfirm() : Promise<void> {
+        const elem = await App.driver.findElement(By.className("se-popup-button-confirm"));
+        await elem.click();
     }
 
-    addCoupangLink() : Promise<void>{
-        return App.ContentMaker.getProductData().then( async (productData)=>{
-            await Util.getInstance().putDelay(1000,this.sendProductUrlKey.bind(this,productData.productUrl),this);
-            await Util.getInstance().putDelay(1000,this.sendProductImageKey.bind(this,productData.productImage),this);
-            await Util.getInstance().putDelay(1000,this.sendDescKey.bind(this,"파트너스 활동을 통해 일정액의 수수료를 제공받을 수 있음"),this);
-        })
+    async addCoupangLink() : Promise<void>{
+        const productData = await App.ContentMaker.getProductData()
+        await Util.getInstance().putDelay(1000,this.sendProductUrlKey.bind(this,productData.productUrl),this);
+        await Util.getInstance().putDelay(1000,this.sendProductImageKey.bind(this,productData.productImage),this);
+        await Util.getInstance().putDelay(1000,this.sendDescKey.bind(this,"파트너스 활동을 통해 일정액의 수수료를 제공받을 수 있음"),this);
     }
 
-    sendProductUrlKey(url : string) : Promise<void>{
-        return App.driver.actions().sendKeys("\n\n"+url).perform();
+    async sendProductUrlKey(url : string) : Promise<void>{
+        await App.driver.actions().sendKeys("\n\n"+url).perform();
     }
 
     async sendProductImageKey(url : string) : Promise<void>{
         await this.addImageProcess(url);
     }
 
-    sendDescKey(desc : string) : Promise<void>{
-        return App.driver.actions().sendKeys("\n\n"+desc).perform();
+    async sendDescKey(desc : string) : Promise<void>{
+        await App.driver.actions().sendKeys("\n\n"+desc).perform();
     }
 
-    submitContent() : Promise<void>{
-        return App.driver.findElement(By.xpath("//div[@id='root']/div/div/div/div[3]/div[3]/button/span"))
-        .then((button)=>{
-            return button.click()
-        })
-        .then(()=>{
-            return App.driver.findElement(By.id("tag-input"))
-        })
-        .then((tagInput)=>{
-            return tagInput.click().then(()=>{return tagInput.sendKeys(DataContainer.getInstance().getCurrentData().keyword)});
-        })
-        .then(()=>{
-            return App.driver.findElement(By.xpath("//div[@id='root']/div/div/div/div[3]/div[3]/div/div/div/div[8]/div/button"))
-        })
-        .then((button)=>{
-            return button.click();
-        })
+    async submitContent() : Promise<void>{
+        const button1 = await App.driver.findElement(By.xpath("//div[@id='root']/div/div/div/div[3]/div[3]/button/span"))
+        await button1.click();
+        const tagInput = await App.driver.findElement(By.id("tag-input"))
+        await tagInput.click()
+        await tagInput.sendKeys(DataContainer.getInstance().getCurrentData().keyword);
+        const button = await App.driver.findElement(By.xpath("//div[@id='root']/div/div/div/div[3]/div[3]/div/div/div/div[8]/div/button"))
+        await button.click();
     }
 }
 

@@ -24,33 +24,32 @@ class Papago {
     }
 
     // Data Fetching From Papago API
-    public runAPIFetching(kor : string):Promise<string>{
-        return this.requestTranslateToEnglish(kor).then((eng)=>{
-            return this.requestTranslateToKorean(eng);
-        })
+    public async runAPIFetching(kor : string):Promise<string>{
+        const eng = await this.requestTranslateToEnglish(kor);
+        return await this.requestTranslateToKorean(eng);
     }
 
-    public requestTranslateToEnglish(text : string) : Promise<string> {
+    public async requestTranslateToEnglish(text : string) : Promise<string> {
         const queryString = qs.stringify({
             source : "ko",
             target : "en",
             text : text
         })
 
-        return this.requestTranslate(queryString)
+        return await this.requestTranslate(queryString)
     }
 
-    public requestTranslateToKorean(text : string) : Promise<string> {
+    public async requestTranslateToKorean(text : string) : Promise<string> {
         const queryString = qs.stringify({
             source : "en",
             target : "ko",
             text : text
         })
 
-        return this.requestTranslate(queryString)
+        return await this.requestTranslate(queryString)
     }
 
-    private requestTranslate(queryString : string) : Promise<string> {
+    private async requestTranslate(queryString : string) : Promise<string> {
 
         axios.defaults.baseURL = "";
 
@@ -64,123 +63,94 @@ class Papago {
 
         const url : string = this.baseUrl;
 
-        return new Promise((resolve,reject)=>{
-            axios.post(url,queryString,options).then((res : AxiosResponse<AxiosPapagoResponse>)=>{
-                resolve(res.data.message.result.translatedText);
-            }).catch(err=>{
-                reject(err);
-            });
-        })
+        const res = await axios.post(url,queryString,options);
+        return res.data.message.result.translatedText;
+
+        // return new Promise((resolve,reject)=>{
+        //     axios.post(url,queryString,options).then((res : AxiosResponse<AxiosPapagoResponse>)=>{
+        //         resolve(res.data.message.result.translatedText);
+        //     }).catch(err=>{
+        //         reject(err);
+        //     });
+        // })
     }
 
     // Crawling From Papago Page
-    private openNewTab() : Promise<void>{
-        return App.driver.executeScript('window.open()').then(()=>{
-            let tabName = '';
-            return App.driver.getAllWindowHandles().then(arr=>{
-                tabName = arr[1];
-                return App.driver.switchTo().window(tabName)
-                .then(()=>{
-                    return App.addCurrentTab();
-                })
-            })
-        })
+    private async openNewTab() : Promise<void>{
+        await App.driver.executeScript('window.open()')
+        let tabName = '';
+        const arr = await App.driver.getAllWindowHandles();
+        tabName = arr[1];
+        await App.driver.switchTo().window(tabName)
+        await App.addCurrentTab();
     }
 
-    private getTranslatePage() : Promise<void> {
-        return App.driver.get('https://papago.naver.com/');
+    private async getTranslatePage() : Promise<void> {
+        await App.driver.get('https://papago.naver.com/');
     }
 
-    private getTextInput() : Promise<void>{
-        return App.driver.findElement(By.id("sourceEditArea")).then((elem)=>{
-            return elem.click();
-        })
+    private async getTextInput() : Promise<void>{
+        const elem = await App.driver.findElement(By.id("sourceEditArea"))
+        await elem.click();
     }
 
-    private inputText(text: string) : Promise<void> {
-        return App.driver.actions().sendKeys(text).perform();
+    private async inputText(text: string) : Promise<void> {
+        await App.driver.actions().sendKeys(text).perform();
     }
 
-    private getEnglishTarget() : Promise<void> {
-        return App.driver.findElement(By.id("txtTarget")).then((elem)=>{
-            return elem.getText().then((text)=>{
-                this.englishText = text;
-            });
-        })
+    private async getEnglishTarget() : Promise<void> {
+        const elem = await App.driver.findElement(By.id("txtTarget"));
+        const text = await elem.getText();
+        this.englishText = text;
     }
 
-    private clearInput() : Promise<void> {
-        return App.driver.findElement(By.name("txtSource")).then((elem)=>{
-            const element = elem;
-            return elem.clear().then(()=>{
-                return element.click();
-            })
-        })
+    private async clearInput() : Promise<void> {
+        const elem = await App.driver.findElement(By.name("txtSource"));
+        const element = elem;
+        await elem.clear()
+        await element.click();
     }
 
-    private inputEnglishText() : Promise<void> {
-        return App.driver.actions().sendKeys(this.englishText).perform();
+    private async inputEnglishText() : Promise<void> {
+        await App.driver.actions().sendKeys(this.englishText).perform();
     }
 
     private async getKoreanTarget() : Promise<string> {
-        return App.driver.findElement(By.id("txtTarget")).then((elem)=>{
-            let text = '';
-            return elem.getText().then((txt)=>{
-                text = txt;
-                return Promise.resolve(text);
-            })
-        })
+        const elem = await App.driver.findElement(By.id("txtTarget"))
+        let text = '';
+        const txt = await elem.getText()
+        text = txt;
+        return text;
     }
 
-    private closeCurrentTab() : Promise<void> {
-        return App.driver.executeScript('window.close()').then(()=>{
-            App.removeLastTab();
-            return App.driver.switchTo().window(App.getTabName(0))
-        })
+    private async closeCurrentTab() : Promise<void> {
+        await App.driver.executeScript('window.close()');
+        App.removeLastTab();
+        await App.driver.switchTo().window(App.getTabName(0))
     }
 
-    private clickTranslate() : Promise<void> {
-        return App.driver.findElement(By.id("btnTranslate")).then((elem)=>{
-            return elem.click();
-        })
+    private async clickTranslate() : Promise<void> {
+        const elem = await App.driver.findElement(By.id("btnTranslate"))
+        await elem.click();
     }
 
-    public runCrawling(text : string) : Promise<string | void>{
-        return this.openNewTab()
-        .then(()=>{
-            return this.getTranslatePage()
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay(3000,this.getTextInput,this);
-        })
-        .then(()=>{
-            return this.inputText(text);
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay(3000,this.clickTranslate,this);
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay(3000,this.getEnglishTarget,this);
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay(3000,this.clearInput,this);
-        })
-        .then(()=>{
-            return this.inputEnglishText();
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay(3000,this.clickTranslate,this);
-        })
-        .then(()=>{
-            return Util.getInstance().putDelay<string>(5000,this.getKoreanTarget,this).then((string)=>{
-                return Util.getInstance().putDelay(3000,this.closeCurrentTab,this).then(()=>{
-                    return Promise.resolve(string);
-                })
-            })
-        })
-        .catch(err=>{
+    public async runCrawling(text : string) : Promise<string | void>{
+        try {
+            await this.openNewTab()
+            await this.getTranslatePage()
+            await Util.getInstance().putDelay(3000,this.getTextInput,this);
+            await this.inputText(text);
+            await Util.getInstance().putDelay(3000,this.clickTranslate,this);
+            await Util.getInstance().putDelay(3000,this.getEnglishTarget,this);
+            await Util.getInstance().putDelay(3000,this.clearInput,this);
+            await this.inputEnglishText();
+            await Util.getInstance().putDelay(3000,this.clickTranslate,this);
+            const string = await Util.getInstance().putDelay<string>(5000,this.getKoreanTarget,this);
+            await Util.getInstance().putDelay(3000,this.closeCurrentTab,this)
+            return string;
+        } catch(err){
             console.log(err);
-        })
+        }
     }
 }
 
