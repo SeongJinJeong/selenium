@@ -134,10 +134,18 @@ class Papago {
         await elem.click();
     }
 
+    private async clickBannerClose() : Promise<void> {
+        const elem = await App.driver.findElements(By.className("evt_close___2B5rg"))
+        if(elem.length > 0){
+            elem[0].click();
+        }
+    }
+
     public async runCrawling(text : string) : Promise<string | void>{
         try {
             await this.openNewTab()
             await this.getTranslatePage()
+            await Util.getInstance().putDelay(3000,this.clickBannerClose,this);
             await Util.getInstance().putDelay(3000,this.getTextInput,this);
             await this.inputText(text);
             await Util.getInstance().putDelay(3000,this.clickTranslate,this);
