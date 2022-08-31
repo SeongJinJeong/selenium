@@ -8,102 +8,74 @@ class Login {
     
     constructor(){}
 
-    run():Promise<void>{
+    async run():Promise<void>{
         console.log("Login Start!");
-        return this.doLoginProcess();
+        await this.doLoginProcess();
     }
 
-    doLoginProcess() : Promise<void>{
+    async doLoginProcess() : Promise<void>{
         try {
-            return this.gotoNaver()
-                .then(()=>{
-                    return Util.getInstance().putDelay(3000,this.getLoginPage,this);
-                })
-                .then(()=>{
-                    return Util.getInstance().putDelay(3000,this.selectLoginBox,this);
-                })
-                .then(()=>{
-                    return this.enterID();
-                })
-                .then(()=>{
-                    return Util.getInstance().putDelay(1000,this.enterPW,this);
-                })
-                .then(()=>{
-                    return this.clickLogin();
-                })
-        }
-        catch(err){
-            console.log(err);
-            return Promise.resolve();
-        }
-    }
-
-    doPageLoginProcess() : Promise<void> {
-        try {
-            return this.selectLoginBox()
-            .then(()=>{
-                return this.enterID();
-            })
-            .then(()=>{
-                return Util.getInstance().putDelay(1000,this.enterPW,this);
-            })
-            .then(()=>{
-                return this.clickLogin();
-            })
+            await this.gotoNaver()
+            await Util.getInstance().putDelay(3000,this.getLoginPage,this);    
+            await Util.getInstance().putDelay(3000,this.selectLoginBox,this);  
+            await this.enterID();  
+            await Util.getInstance().putDelay(1000,this.enterPW,this); 
+            await this.clickLogin();   
         }
         catch(err){
             console.log(err);
         }
     }
 
-    gotoNaver() : Promise<void> {
-        return App.driver.get('https://www.naver.com');
+    async doPageLoginProcess() : Promise<void> {
+        try {
+            await this.selectLoginBox() 
+            await this.enterID();  
+            await Util.getInstance().putDelay(1000,this.enterPW,this);  
+            await this.clickLogin();
+        }
+        catch(err){
+            console.log(err);
+        }
     }
 
-    getLoginPage() : Promise<void> {
-        return App.driver.findElement(By.className('link_login'))
-        .then((webElement)=>{
-            return webElement.click();
-        })
+    async gotoNaver() : Promise<void> {
+        await App.driver.get('https://www.naver.com');
     }
 
-    selectLoginBox() : Promise<void> {
-        return App.driver.findElement(By.className('menu_id'))
-        .then((elem)=>{
-            return elem.click();
-        })
+    async getLoginPage() : Promise<void> {
+        const webElement = await App.driver.findElement(By.className('link_login'))
+        await webElement.click();
     }
 
-    enterID() : Promise<void> {
+    async selectLoginBox() : Promise<void> {
+        const elem = await App.driver.findElement(By.className('menu_id'))
+        await elem.click();
+    }
+
+    async enterID() : Promise<void> {
         let idTextField : WebElement = null!;
 
-        idTextField = App.driver.findElement(By.id('id'));
-        idTextField.sendKeys(Key.F12);
-        return idTextField.click()
-        .then(()=>{
-            return Util.getInstance().makeCopy(DEFINES.LOGIN.LOGIN_ID)
-            .then(()=>{
-                idTextField.sendKeys(Key.CONTROL,'v');
-            })
-        })
+        idTextField = await App.driver.findElement(By.id('id'));
+        await idTextField.click();
+        await Util.getInstance().makeCopy(DEFINES.LOGIN.LOGIN_ID)
+        idTextField.sendKeys(Key.CONTROL,'v');
     }
 
-    enterPW() : Promise<void> {
+    async enterPW() : Promise<void> {
         let pwTextField : WebElement = null!;
         
-        pwTextField = App.driver.findElement(By.id('pw'));
-        return pwTextField.click()
-        .then(()=>{
-            Util.getInstance().makeCopy(DEFINES.LOGIN.LOGIN_PW);
-            return pwTextField.sendKeys(Key.CONTROL,'v');
-        })
+        pwTextField = await App.driver.findElement(By.id('pw'));
+        await pwTextField.click();
+        await Util.getInstance().makeCopy(DEFINES.LOGIN.LOGIN_PW);
+        await pwTextField.sendKeys(Key.CONTROL,'v');
     }
 
-    clickLogin() : Promise<void> {
+    async clickLogin() : Promise<void> {
         let loginBtn : WebElement = null!;
 
-        loginBtn = App.driver.findElement(By.id('log.login'));
-        return loginBtn.click();
+        loginBtn = await App.driver.findElement(By.id('log.login'));
+        await loginBtn.click();
     }
 }
 

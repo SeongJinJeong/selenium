@@ -62,12 +62,11 @@ class DataContainer {
         return this._currentData;
     }
 
-    public initData() : Promise<void> {
+    public async initData() : Promise<void> {
         var keyword = this.getSearchKeyword();
-        return DataManager.getInstance().getSearchData(DEFINES.PRODUCT_URL_GET.SEARCH,"GET",keyword,10).then((data : AxiosSearchResponse)=>{
-            this._productDataArr = data.data.productData;
-            console.log("\n\n\n Get Product Data Finish : \n"+JSON.stringify(this._productDataArr));
-        })
+        const data : AxiosSearchResponse | any = await DataManager.getInstance().getSearchData(DEFINES.PRODUCT_URL_GET.SEARCH,"GET",keyword,10);
+        this._productDataArr = data.data.productData;
+        console.log("\n\n\n Get Product Data Finish : \n"+JSON.stringify(this._productDataArr));
     }
 }
 

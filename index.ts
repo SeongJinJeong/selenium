@@ -61,55 +61,38 @@ class App {
     this.util = new Util();
   }
 
-  run() : Promise<void>{
-    return App.driver.sendAndGetDevToolsCommand("Page.addScriptToEvaluateOnNewDocument",{"source":`
+  async run() : Promise<void>{
+    const val = await App.driver.sendAndGetDevToolsCommand("Page.addScriptToEvaluateOnNewDocument",{"source":`
       console.log('hello');
       Object.defineProperty(navigator,'webdriver',{get:()=>undefined})
-    `})
-    .then((val)=>{
-      console.log(val);
-      return Promise.resolve();
-    })
-    .then(()=>{
-      try{
-        return App.driver.get('https://naver.com')
-        .then(()=>{
-          
-          if(App.isRunning){
-            return App.ContentMaker.run();
-          } else {
-            return App.addCurrentTab().then(()=>{
-              App.ContentMaker = new ContentMaker();
-              return App.ContentMaker.run();
-            })
-          }
-        })
-        .then(()=>{
-          if(App.isRunning){
-            return Promise.resolve();
-          }
-          return this.login.run();
-        })
-        .then(()=>{
-          return Util.getInstance().putDelay(5000,function(){
-            return this.blog.run();
-          },this);
-        })
-        .then(()=>{
-          App.isRunning = true;
-          App.ContentMaker.reset();
-          console.log("FINISH!");
-          return Promise.resolve();
-        })
+    `});
+    console.log(val);
+    try{
+      await App.driver.get('https://naver.com')
+        if(App.isRunning){
+            await App.ContentMaker.run();
+        } else {
+          await App.addCurrentTab();
+          App.ContentMaker = new ContentMaker();
+          await App.ContentMaker.run();
+        }
+        if(!App.isRunning){
+          await this.login.run();
+        }
+        await Util.getInstance().putDelay(5000,async function(){
+            await this.blog.run();
+        },this);
+        App.isRunning = true;
+        App.ContentMaker.reset();
+        console.log("FINISH!");
       } catch (err){
         console.error(err);
         return Promise.reject(err);
       }
-    })
   }
 
-  quit():Promise<void>{
-    return App.driver.quit();
+  async quit():Promise<void>{
+    await App.driver.quit();
   }
 
   setOptions(opts : string[] | string) : void{
@@ -124,20 +107,14 @@ class App {
     })
   }
 
-  public static addCurrentTab() : Promise<void>{
-    return App.driver.getWindowHandle().then((tabName)=>{
-      this.tabs.push(tabName);
-      return Promise.resolve();
-    })
-    .then(()=>{
-      return App.driver.getAllWindowHandles().then((tabs)=>{
-        if(tabs.length !== this.tabs.length)
-          throw new Error("tab length is not same");
-  
-        console.log("\n Add Current Tab Succeed! ");
-      })
-    })
-    .catch(console.error);
+  public static async addCurrentTab() : Promise<void>{
+    const tabName = await App.driver.getWindowHandle()
+    this.tabs.push(tabName);
+    const tabs = await App.driver.getAllWindowHandles();
+    if(tabs.length !== this.tabs.length)
+      throw new Error("tab length is not same");
+    else
+      console.log("\n Add Current Tab Succeed! ");
   }
 
   public static getTabName(index : number) : string{

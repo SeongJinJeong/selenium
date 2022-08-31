@@ -41,7 +41,7 @@ class DataManager {
                 return response.data;
             } catch (err) {
                 console.log(JSON.stringify(err.response.data));
-                Promise.reject(new AxiosError(err));
+                return Promise.reject(new AxiosError(err));
             }        
         } else {
             try {       
@@ -55,7 +55,7 @@ class DataManager {
                 return response.data;
             } catch (err) {
                 console.log(JSON.stringify(err));
-                Promise.reject(new AxiosError(err));
+                return Promise.reject(new AxiosError(err));
             }
         }    
     }
